@@ -16,7 +16,7 @@ EVENTBRITE_PATTERN = r'\d{9,10}'
 URL_PATTERN = r'https?://.+'
 
 # Defaults.
-CARPENTRIES = ("dc", "swc", "lc", "cp")
+CARPENTRIES = ("dc", "swc", "lc", "cp", "cms")
 DEFAULT_CONTACT_EMAIL = 'team@carpentries.org'
 
 USAGE = 'Usage: "workshop_check.py path/to/root/directory"'
@@ -89,7 +89,7 @@ def check_layout(layout):
 
 @look_for_fixme
 def check_carpentry(layout):
-    '''"carpentry" in YAML header must be "dc", "swc", "lc", or "cp".'''
+    '''"carpentry" in YAML header must be "dc", "swc", "lc", "cms", or "cp".'''
 
     return layout in CARPENTRIES
 
@@ -388,7 +388,7 @@ def check_config(reporter, filename):
                    kind)
 
     carpentry = config.get('carpentry', None)
-    reporter.check(carpentry in ('swc', 'dc', 'lc', 'cp'),
+    reporter.check(carpentry in ('swc', 'dc', 'lc', 'cp', 'cms'),
                    filename,
                    'Missing or unknown carpentry: {0}',
                    carpentry)

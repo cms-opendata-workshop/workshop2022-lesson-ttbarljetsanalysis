@@ -8,7 +8,8 @@
 # lc: Library Carpentry
 # cp: Carpentries (to use for instructor traning for instance)
 # incubator: Carpentries Incubator
-carpentry: "swc"
+# cms: CMS trainings
+carpentry: "cms"
 
 # Overall title for pages.
 title: "Lesson Title"
@@ -39,6 +40,7 @@ carpentries_github: "https://github.com/carpentries"
 carpentries_pages: "https://carpentries.github.io"
 carpentries_site: "https://carpentries.org/"
 dc_site: "https://datacarpentry.org"
+cms_site: "https://cms.cern"
 example_repo: "https://github.com/carpentries/lesson-example"
 example_site: "https://carpentries.github.io/lesson-example"
 lc_site: "https://librarycarpentry.org/"

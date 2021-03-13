@@ -1,6 +1,7 @@
 # Contributing
 
-[The Carpentries][c-site] ([Software Carpentry][swc-site], [Data Carpentry][dc-site], and [Library Carpentry][lc-site]) are open source projects,
+The CMS DPOA training material and its repositories
+are open source projects,
 and we welcome contributions of all kinds:
 new lessons,
 fixes to existing material,
@@ -14,7 +15,7 @@ you agree that we may redistribute your work under [our license](LICENSE.md).
 In exchange,
 we will address your issues and/or assess your change proposal as promptly as we can,
 and help you become a member of our community.
-Everyone involved in [The Carpentries][c-site]
+Everyone involved in the workshop
 agrees to abide by our [code of conduct](CODE_OF_CONDUCT.md).
 
 ## How to Contribute
@@ -46,13 +47,13 @@ and to meet some of our community members.
 ## Where to Contribute
 
 1.  If you wish to change this lesson,
-    please work in <https://github.com/swcarpentry/FIXME>,
-    which can be viewed at <https://swcarpentry.github.io/FIXME>.
+    please work in <https://github.com/cms-opendata-workshop/FIXME>,
+    which can be viewed at <https://cms-opendata-workshop.github.io/FIXME>.
 
 2.  If you wish to change the example lesson,
-    please work in <https://github.com/carpentries/lesson-example>,
+    please work in <https://github.com/cms-opendata-workshop/lesson-example>,
     which documents the format of our lessons
-    and can be viewed at <https://carpentries.github.io/lesson-example>.
+    and can be viewed at <https://cms-opendata-workshop.github.io/lesson-example>.
 
 3.  If you wish to change the template used for workshop websites,
     please work in <https://github.com/carpentries/workshop-template>.
@@ -62,7 +63,7 @@ and to meet some of our community members.
 
 4.  If you wish to change CSS style files, tools,
     or HTML boilerplate for lessons or workshops stored in `_includes` or `_layouts`,
-    please work in <https://github.com/carpentries/styles>.
+    please work in <https://github.com/cms-opendata-workshop/styles>.
 
 ## What to Contribute
 
@@ -73,8 +74,7 @@ and submitting [bug reports][issues]
 about things that do not work, aren not clear, or are missing.
 If you are looking for ideas, please see the 'Issues' tab for
 a list of issues associated with this repository,
-or you may also look at the issues for [Data Carpentry][dc-issues], 
-[Software Carpentry][swc-issues], and [Library Carpentry][lc-issues] projects.
+or you may also look at the [issues][cmsodws-issues] for our projects.
 
 Comments on issues and reviews of pull requests are just as welcome:
 we are smarter together than we are on our own.
@@ -128,24 +128,12 @@ repository for reference while revising.
 
 ## Other Resources
 
-General discussion of [Software Carpentry][swc-site] and [Data Carpentry][dc-site]
-happens on the [discussion mailing list][discuss-list],
-which everyone is welcome to join.
-You can also [reach us by email][email].
+You can [reach us by email][email].
 
-[email]: mailto:admin@software-carpentry.org
-[dc-issues]: https://github.com/issues?q=user%3Adatacarpentry
-[dc-lessons]: http://datacarpentry.org/lessons/
-[dc-site]: http://datacarpentry.org/
-[discuss-list]: https://carpentries.topicbox.com/groups/discuss
+[email]: mailto:cms-data-preservation@cern.ch
 [github]: https://github.com
 [github-flow]: https://guides.github.com/introduction/flow/
 [github-join]: https://github.com/join
 [how-contribute]: https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github
 [issues]: https://guides.github.com/features/issues/
-[swc-issues]: https://github.com/issues?q=user%3Aswcarpentry
-[swc-lessons]: https://software-carpentry.org/lessons/
-[swc-site]: https://software-carpentry.org/
-[c-site]: https://carpentries.org/
-[lc-site]: https://librarycarpentry.org/
-[lc-issues]: https://github.com/issues?q=user%3Alibrarycarpentry
+[cmsodws-issues]: https://github.com/issues?q=user%3Acms-opendata-workshop
