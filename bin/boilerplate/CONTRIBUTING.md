@@ -130,7 +130,7 @@ repository for reference while revising.
 
 You can [reach us by email][email].
 
-[email]: mailto:cms-data-preservation@cern.ch
+[email]: mailto:cms-dpoa-coordinators@cern.ch 
 [github]: https://github.com
 [github-flow]: https://guides.github.com/introduction/flow/
 [github-join]: https://github.com/join
