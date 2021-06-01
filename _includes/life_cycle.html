@@ -31,4 +31,20 @@
 We don't do anything special for now
 {% endcomment %}
 
+{% elsif site.life_cycle == "superseeded" %}
+
+<div class="panel panel-default life-cycle">
+  <div id="life-cycle" class="panel-body pre-alpha">
+    This lesson is being superseeded (link to <a href="FIXME">newer page</a>)
+  </div>
+</div>
+
+{% elsif site.life_cycle == "deprecated" %}
+
+<div class="panel panel-default life-cycle">
+  <div id="life-cycle" class="panel-body pre-alpha">
+    Warning: this lesson might be deprecated
+  </div>
+</div>
+
 {% endif %}
