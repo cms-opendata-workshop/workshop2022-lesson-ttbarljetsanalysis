@@ -6,6 +6,7 @@ permalink: /aio/index.html
 As a maintainer, you don't need to edit this file.
 If you notice that something doesn't work, please 
 open an issue: https://github.com/cms-opendata-workshop/styles/issues/new
+
 {% endcomment %}
 
 {% include base_path.html %}

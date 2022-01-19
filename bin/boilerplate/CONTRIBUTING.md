@@ -71,7 +71,7 @@ There are many ways to contribute,
 from writing new exercises and improving existing ones
 to updating or filling in the documentation
 and submitting [bug reports][issues]
-about things that do not work, aren not clear, or are missing.
+about things that do not work, are not clear, or are missing.
 If you are looking for ideas, please see the 'Issues' tab for
 a list of issues associated with this repository,
 or you may also look at the [issues][cmsodws-issues] for our projects.
@@ -94,7 +94,7 @@ and (b) explain what you would take out to make room for it.
 The first encourages contributors to be honest about requirements;
 the second, to think hard about priorities.
 
-We are also not looking for exercises or other material that only run on one platform.
+We are also not looking for exercises or other material that will only run on one platform.
 Our workshops typically contain a mixture of Windows, macOS, and Linux users;
 in order to be usable,
 our lessons must run equally well on all three.
@@ -104,7 +104,7 @@ our lessons must run equally well on all three.
 If you choose to contribute via GitHub, you may want to look at
 [How to Contribute to an Open Source Project on GitHub][how-contribute].
 To manage changes, we follow [GitHub flow][github-flow].
-Each lesson has two maintainers who review issues and pull requests or encourage others to do so.
+Each lesson has at least two maintainers who review issues and pull requests or encourage others to do so.
 The maintainers are community volunteers and have final say over what gets merged into the lesson.
 To use the web interface for contributing to a lesson:
 
@@ -134,6 +134,6 @@ You can [reach us by email][email].
 [github]: https://github.com
 [github-flow]: https://guides.github.com/introduction/flow/
 [github-join]: https://github.com/join
-[how-contribute]: https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github
+[how-contribute]: https://app.egghead.io/playlists/how-to-contribute-to-an-open-source-project-on-github
 [issues]: https://guides.github.com/features/issues/
 [cmsodws-issues]: https://github.com/issues?q=user%3Acms-opendata-workshop
