@@ -20,7 +20,10 @@
     <link rel="stylesheet" type="text/css" href="{{ relative_root_path }}/assets/css/katex.min.css" />
     {% endif %}
     <link rel="license" href="#license-info" />
-
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
     {% include favicons.html %}
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
