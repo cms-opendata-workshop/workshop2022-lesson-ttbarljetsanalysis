@@ -1,10 +1,10 @@
 ---
-title: "Analysis Chain"
+title: "Coffe Chain"
 teaching: 80
 exercises: 0
 questions:
-- "Key question 1"
-- "Key question 2"
+- "What is the general plan for the analysis?"
+- "What are the signal and background datasets that we will need?"
 objectives:
 - "1st learning objective"
 - "2nd learning objective"
