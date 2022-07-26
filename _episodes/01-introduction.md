@@ -1,7 +1,7 @@
 ---
 title: "Introduction"
-teaching: 40
-exercises: 0
+teaching: 20
+exercises: 20
 questions:
 - "What analysis will we be doing?"
 - "What is columnar analysis?"
