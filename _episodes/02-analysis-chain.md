@@ -1,5 +1,5 @@
 ---
-title: "Coffe Chain"
+title: "Coffea Chain"
 teaching: 80
 exercises: 0
 questions:
