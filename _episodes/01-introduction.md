@@ -30,7 +30,7 @@ We will attempt to use tools that are built on modern, powerful and efficient py
 
 ## Columnar analysis basics with Awkward
 
-Note:  this and the next section are shameless recasts of [this notebook](https://github.com/iris-hep/analysis-grand-challenge/tree/main/workshops/agctools2022/coffea) by Mat Adamec presented during the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/e/agc-tools-2). 
+Note:  this and the next section on this episode are a recast of [this notebook](https://github.com/iris-hep/analysis-grand-challenge/tree/main/workshops/agctools2022/coffea) by Mat Adamec presented during the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/e/agc-tools-2). 
 
 In one of the pre-exercises we learned how to access `ROOT` files (the standard use at the LHC experiments) using [uproot](https://cms-opendata-workshop.github.io/workshop2022-lesson-cpp-root-python/07-uproot/index.html#open-a-file) and why the [awkward](https://cms-opendata-workshop.github.io/workshop2022-lesson-cpp-root-python/08-awkward/#access-or-download-a-root-file-for-use-with-this-exercise) library can be very helpufl when dealing with *jagged* arrays.
 

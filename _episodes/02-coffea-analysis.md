@@ -13,6 +13,9 @@ keypoints:
 - "keypoint 2"
 ---
 
+
+This episode is a recast of the [analysis demo](https://github.com/iris-hep/analysis-grand-challenge/blob/main/analyses/cms-open-data-ttbar/coffea.ipynb) presented by Alexander Held at the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/event/1126109/). Our attempt is to make it more understandable by paying a bit more attention to the details.
+
 ## Datasets and pre-selection
 
 As was mentioned in the previous episode, we will be working towards a measurement of the top and anti-top quark production cross section $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
@@ -34,7 +37,37 @@ These pre-selection filters reduce the output of the files significantly to the 
 **FIXME**: show the json file here
 
 
-## Building the basic analysis with Coffea
+## Building the basic analysis selection
+
+Here we will attempt to build some meaninful histograms by implementing the physics object selection requirements that were used by the CMS analysts that performed this analysis back in 2015.  For understanding the basics of the analysis implementation, we will work with events from a single file of one dataset.  Then, we will encapsulate our analysis in a Coffea *processor* and run it for all datasets: collisions, signal and background.
+
+Here is a summary of the requirements they applied (originally they also considered some vetos on leptons, but we will not do that for this example):
+
+> ## Muon Selection
+>
+> Exactly one muon
+>   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.1$$, tight ID
+>   * relIso < 0.15 ([corrected for pile-up contamination](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/MuonAnalyzer.cc#L251))
+>   * SIP3D < 4
+>
+{: .checklist}
+
+> ## Electron Selection
+>
+> Exactly one electron
+>   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.1$$, tight ID
+>   * SIP3D < 4
+>   * Jets identified as b-jets if [CSV discriminator value](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/JetAnalyzer.cc#L410) > 0.8 (medium working point)
+>
+{: .checklist}
+
+> ## Jet Selection
+>
+> Require at least one jet
+>   * Loose jet ID
+>   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.4$$, [Fall15_25nsV2](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/python/poet_cfg.py#L148)
+>
+{: .checklist}
 
 Don't forget to keep working on the python tools Docker container.  In order to advance, we need the improved schema on which we worked last section.  If you didn't manage to get it right, you can download it from [here](FIXME).  You can get it directly by doing
 
@@ -56,9 +89,9 @@ events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms
 ~~~
 {: .language-python}
 
-Let's make some histograms
+We will apply of the selection criteria and then make some meaningful histograms.
 
-First, start by applying a $$p_{T}$$ cut for the objects of interest, namely electrons, muons and jets.  To compare, first check the number of muons in each subarray of the original collection:
+First, start by applying a $$p_{T}$$ cut for the objects of interest, namely electrons, muons and jets.  To compare, first check the number of objects in each subarray of the original collection:
 
 ~~~
 ak.num(events.electron, axis=1)
@@ -67,12 +100,20 @@ ak.num(events.jet, axis=1)
 ~~~
 {: .language-python}
 
-Now, let's apply the $$p_{T}$$ and $$\eta$$ *mask* requirement:
+Before we go on,  let's do a quick check on the *fields* available for each of our objects of interest:
 
 ~~~
-# pT > 30 GeV for leptons & jets and eta requirements
-selected_electrons = events.electron[(events.electron.pt > 30) & (abs(events.electron.eta)<2.1)]
-selected_muons = events.muon[(events.muon.pt > 30) & (abs(events.muon.eta)<2.1)]
+events.electron.fields
+events.muon.fields
+events.jet.fields
+~~~
+{: .language-python}
+
+Now, let's apply the $$p_{T}$$ and $$\eta$$ *mask* together with the *tightness* requirement for the leptons:
+
+~~~
+selected_electrons = events.electron[(events.electron.pt > 30) & (abs(events.electron.eta)<2.1) & (events.electron.isTight == True)]
+selected_muons = events.muon[(events.muon.pt > 30) & (abs(events.muon.eta)<2.1) & (events.muon.isTight == True)]
 selected_jets = events.jet[(events.jet.corrpt > 30) & (abs(events.jet.eta)<2.4)]
 ~~~
 {: .language-python}
@@ -94,13 +135,172 @@ ak.num(selected_electrons, axis=0)
 ~~~
 {: .language-python}
 
+Also, check one particular subarray to see if the applied requirements make sense:
 
+~~~
+events.muon.pt[0]
+events.muon.eta[0]
+events.muon.isTight[0]
+selected_muons.pt[0]
+selected_muons.eta[0]
+selected_muons.isTight[0]
+~~~
+{: .language-python}
+
+> ## **Challenge**: Adding isolation and sip3d requirements for leptons
+>
+> Please resist the urge to look at the solution.  Only compare with the proposed solution after you make your own attempt.
+>
+> Redo the lepton selection above (for `selected_electrons`, `selected_muons`) to include:
+>
+> * The relIsolation requirement for the muons (the one we built for dealing with pile-up)
+> * The requirement for the Significance on the Impact Parameter in 3D (SIP3D) for muons and electrons
+>
+> > ## Solution
+> >
+> > ~~~
+> > selected_electrons = events.electron[(events.electron.pt > 30) & (abs(events.electron.eta)<2.1) & (events.electron.isTight == True) & (events.electron.sip3d < 4)]
+> > selected_muons = events.muon[(events.muon.pt > 30) & (abs(events.muon.eta)<2.1) & (events.muon.isTight == True) & (events.muon.sip3d < 4) & (events.muon.pfreliso04DBCorr < 0.15)]
+> > ~~~
+> > {: .language-python}
+> {: .solution}
+{: .challenge}
+
+
+At this point it would be good to start playing around with the different methods that *awkward* gives you.  Remember tha when exploring interactively, you could always type `ak.` and hit the <kbd>Tab</kbd> key to see the different methods available:
+
+~~~
+>>> ak.
+Display all 123 possibilities? (y or n)
+ak.Array(                  ak.awkward                 ak.from_arrow(             ak.kernels(                ak.operations              ak.strings_astype(         ak.types
+ak.ArrayBuilder(           ak.behavior                ak.from_awkward0(          ak.layout                  ak.packed(                 ak.sum(                    ak.unflatten(
+ak.ByteBehavior(           ak.behaviors               ak.from_buffers(           ak.linear_fit(             ak.pad_none(               ak.to_arrow(               ak.unzip(
+ak.ByteStringBehavior(     ak.broadcast_arrays(       ak.from_categorical(       ak.local_index(            ak.parameters(             ak.to_arrow_table(         ak.validity_error(
+ak.CategoricalBehavior(    ak.cartesian(              ak.from_cupy(              ak.mask(                   ak.partition               ak.to_awkward0(            ak.values_astype(
+ak.CharBehavior(           ak.categories(             ak.from_iter(              ak.materialized(           ak.partitioned(            ak.to_buffers(             ak.var(
+ak.Record(                 ak.combinations(           ak.from_jax(               ak.max(                    ak.partitions(             ak.to_categorical(         ak.virtual(
+ak.Sized()                 ak.concatenate(            ak.from_json(              ak.mean(                   ak.prod(                   ak.to_cupy(                ak.where(
+ak.StringBehavior(         ak.copy(                   ak.from_numpy(             ak.min(                    ak.ptp(                    ak.to_jax(                 ak.with_cache(
+ak.all(                    ak.corr(                   ak.from_parquet(           ak.mixin_class(            ak.ravel(                  ak.to_json(                ak.with_field(
+ak.any(                    ak.count(                  ak.from_regular(           ak.mixin_class_method(     ak.regularize_numpyarray(  ak.to_kernels(             ak.with_name(
+ak.argcartesian(           ak.count_nonzero(          ak.full_like(              ak.moment(                 ak.repartition(            ak.to_layout(              ak.with_parameter(
+ak.argcombinations(        ak.covar(                  ak.highlevel               ak.nan_to_num(             ak.run_lengths(            ak.to_list(                ak.without_parameters(
+ak.argmax(                 ak.fields(                 ak.is_categorical(         ak.nplike                  ak.singletons(             ak.to_numpy(               ak.zeros_like(
+ak.argmin(                 ak.fill_none(              ak.is_none(                ak.num(                    ak.size(                   ak.to_pandas(              ak.zip(
+ak.argsort(                ak.firsts(                 ak.is_valid(               ak.numba                   ak.softmax(                ak.to_parquet(
+ak.atleast_1d(             ak.flatten(                ak.isclose(                ak.numexpr                 ak.sort(                   ak.to_regular(
+ak.autograd                ak.forms                   ak.jax                     ak.ones_like(              ak.std(                    ak.type(
+
+~~~
+{: .output}
+
+
+You could also get some help on what they do by typing, in your interactive prompt, something like:
+
+~~~
+help(ak.count)
+~~~
+{: .language-python}
+
+to obtain:
+
+~~~
+Help on function count in module awkward.operations.reducers:
+
+count(array, axis=None, keepdims=False, mask_identity=False)
+    Args:
+        array: Data in which to count elements.
+        axis (None or int): If None, combine all values from the array into
+            a single scalar result; if an int, group by that axis: `0` is the
+            outermost, `1` is the first level of nested lists, etc., and
+            negative `axis` counts from the innermost: `-1` is the innermost,
+            `-2` is the next level up, etc.
+        keepdims (bool): If False, this reducer decreases the number of
+            dimensions by 1; if True, the reduced values are wrapped in a new
+            length-1 dimension so that the result of this operation may be
+            broadcasted with the original array.
+        mask_identity (bool): If True, reducing over empty lists results in
+            None (an option type); otherwise, reducing over empty lists
+            results in the operation's identity.
+
+    Counts elements of `array` (many types supported, including all
+    Awkward Arrays and Records). The identity of counting is `0` and it is
+    usually not masked.
+
+    This function has no analog in NumPy because counting values in a
+    rectilinear array would only result in elements of the NumPy array's
+    [shape](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.shape.html).
+
+    However, for nested lists of variable dimension and missing values, the
+    result of counting is non-trivial. For example, with this `array`,
+
+        ak.Array([[ 0.1,  0.2      ],
+                  [None, 10.2, None],
+                  None,
+                  [20.1, 20.2, 20.3],
+                  [30.1, 30.2      ]])
+
+    the result of counting over the innermost dimension is
+
+        >>> ak.count(array, axis=-1)
+        <Array [2, 1, None, 3, 2] type='5 * ?int64'>
+
+    the outermost dimension is
+
+        >>> ak.count(array, axis=0)
+        <Array [3, 4, 1] type='3 * int64'>
+
+    and all dimensions is
+
+        >>> ak.count(array, axis=None)
+        8
+
+~~~
+{: .output}
+
+
+Let's work on the single lepton requirement.  Remember, the criteria indicates that we will only consider events with exactly one electron or exactly one muon.  Let'see how we can do this:
+
+~~~
+event_filters = (ak.count(selected_electrons.pt, axis=1) & ak.count(selected_muons.pt, axis=1) == 1)
+~~~
+{: .language-python}
+
+In order to keep the analyisis regions (we will see this later) from the original AGC demo, let's require at least four jets in our event filter:
+
+~~~
+event_filters = event_filters & (ak.count(selected_jets.corrpt, axis=1) >= 4)
+~~~
+{: .language-python}
+
+
+> ## **Challenge**: Require at least one b-tagged jet
+>
+> Please resist the urge to look at the solution.  Only compare with the proposed solution after you make your own attempt.
+>
+> To the `event_filters` above, add the requirement to have at least one b-tagged jet with score above the proposed threshold (medium point; see above)
+>
+> > ## Solution
+> >
+> > ~~~
+> > # at least one b-tagged jet ("tag" means score above threshold)
+> > B_TAG_THRESHOLD = 0.8
+> > event_filters = event_filters & (ak.sum(selected_jets.btag >= B_TAG_THRESHOLD, axis=1) >= 1)
+> > ~~~
+> > {: .language-python}
+> {: .solution}
+{: .challenge}
 
 
 ~~~
 
 ~~~
 {: .language-python}
+
+
+
+
+
 
 ~~~
 
