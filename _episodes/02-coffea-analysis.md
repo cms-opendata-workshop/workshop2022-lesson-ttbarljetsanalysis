@@ -76,13 +76,14 @@ wget FIXME
 ~~~
 {: .language-bash}
 
-Let'start fresh, import the needed libraries and open an example file:
+Let'start fresh, import the needed libraries and open an example file (we include `numpy` this time and histograming/plotting libraries):
 
 ~~~
 import uproot
+import numpy as np
 import awkward as ak
 import hist
-from hist import Hist
+import matplotlib.pyplot as plt
 from coffea.nanoevents import NanoEventsFactory, BaseSchema
 from agc_schema import AGCSchema
 events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms/upload/od-workshop/ws2021/myoutput_odws2022-ttbaljets-prodv2.0_merged.root', schemaclass=AGCSchema, treepath='events').events()
@@ -90,6 +91,8 @@ events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms
 {: .language-python}
 
 We will apply of the selection criteria and then make some meaningful histograms.
+
+### Objects selection
 
 First, start by applying a $$p_{T}$$ cut for the objects of interest, namely electrons, muons and jets.  To compare, first check the number of objects in each subarray of the original collection:
 
@@ -166,6 +169,8 @@ selected_muons.isTight[0]
 > {: .solution}
 {: .challenge}
 
+
+### Events selection
 
 At this point it would be good to start playing around with the different methods that *awkward* gives you.  Remember tha when exploring interactively, you could always type `ak.` and hit the <kbd>Tab</kbd> key to see the different methods available:
 
@@ -292,13 +297,118 @@ event_filters = event_filters & (ak.count(selected_jets.corrpt, axis=1) >= 4)
 {: .challenge}
 
 
+Let's now apply the event filters:
+
+~~~
+selected_events = events[event_filters]
+selected_electrons = selected_electrons[event_filters]
+selected_muons = selected_muons[event_filters]
+selected_jets = selected_jets[event_filters]
+~~~
+{: .language-python}
+
+### Signal region selection
+
+In a typical analysis one can construct a *control region* (with no essentially no expected signal) and a *signal region* (with signal events).  Let's call our signal region `4j2b`, because the final state of the process we are aiming to measure has at least 4, two of which should be from b quarks.
+
+Let's define a filter for this region and create such region:
+
+~~~
+region_filter = ak.sum(selected_jets.btag > B_TAG_THRESHOLD, axis=1) >= 2
+selected_jets_region = selected_jets[region_filter]
+~~~
+{: .language-python}
+
+Now, here is where the true power of columnar analysis and the wonderful python tools that are being developed become really evident.  Let's reconstruct the hadronic top as the *bjj* system with the largest $$p_{T}$$.  We will get ourselves an observable, which is the mass.
+
+~~~
+trijet = ak.combinations(selected_jets_region, 3, fields=["j1", "j2", "j3"])  # trijet candidates
+trijet["p4"] = trijet.j1 + trijet.j2 + trijet.j3  # calculate four-momentum of tri-jet system
+trijet["max_btag"] = np.maximum(trijet.j1.btag, np.maximum(trijet.j2.btag, trijet.j3.btag))
+trijet = trijet[trijet.max_btag > B_TAG_THRESHOLD]  # require at least one-btag in trijet candidates
+# pick trijet candidate with largest pT and calculate mass of system
+trijet_mass = trijet["p4"][ak.argmax(trijet.p4.pt, axis=1, keepdims=True)].mass
+observable = ak.flatten(trijet_mass)
+~~~
+{: .language-python}
+
+> ## **Challenge**: Can you figure out what is happening above?
+>
+> Take some time to understand the logic of the above statements and explore the *awkward* methods used to achive the building of the ovbservable.
+>
+{: .challenge}
+
+
+### Visualize the observable
+
+So, now we have a flat array for our observable. What else do we need for plotting? Well, a histogram is essentially a way to reduce our data. We can't just plot every value of *trijet* mass, so we divide up our range of masses into n bins across some reasonable range. Thus, we need to define the mapping for our reduction; defining the number of bins and the range is sufficient for this. This is called a `Regular` axis in the `hist.Hist` package.
+
+In our case, let's plot 25 bins between values of 50 and 550. Because a histogram can contain an arbitrary amount of axes, we also need to give our axis a name (which becomes its reference in our code) and a label (which is the label on the axis that users see when the histogram is plotted).
+
+Since we will be using several datasets (for signal, background and collisions data) we need a wasy of keep these contributions separate in our histograms.  One can del with this using `Categorical` axes. A Categorical axis takes a name, a label, and a pre-defined list of categories.  Let's book a generic histogram with such capabilities:
+
+~~~
+histogram = hist.Hist.new.Reg(25, 50, 550, name="observable", label="observable [GeV]").StrCat(["4j1b", "4j2b"], name="region", label="Region").StrCat([], name="process", label="Process", growth=True).StrCat([], name="variation", label="Systematic variation", growth=True).Weight()        
+~~~
+{: .language-python}
+
+This `histogram` placeholder also has the option of assigning a `Weight` to the data tha goes in.  This is because for simulated MC samples (backgrounds)
+, we will need to normalize the number of events to the total integrated luminosity.
+
+By the way, if you look at the documentation,
+
+~~~
+help(hist.Hist.new)
+~~~
+{: .language-python}
+
+you will find
+
+~~~
+|  Reg = Regular(self, bins: 'int', start: 'float', stop: 'float', *, name: 'str' = '', label: 'str' = '', metadata: 'Any' = None, flow: 'bool' = True, underflow: 'bool | None' = None, overflow: 'bool | None' 
+= None, growth: 'bool' = False, circular: 'bool' = False, transform: 'AxisTransform | None' = None, __dict__: 'dict[str, Any] | None' = None) -> 'ConstructProxy'
+ |  
+ |  Regular(self, bins: 'int', start: 'float', stop: 'float', *, name: 'str' = '', label: 'str' = '', metadata: 'Any' = None, flow: 'bool' = True, underflow: 'bool | None' = None, overflow: 'bool | None' = None
+, growth: 'bool' = False, circular: 'bool' = False, transform: 'AxisTransform | None' = None, __dict__: 'dict[str, Any] | None' = None) -> 'ConstructProxy'
+~~~
+{: .output}
+
+Now, let's fill in the histogram:
+
+~~~
+histogram.fill(observable=observable, region="4j2b", process="collisons", variation="none", weight=1)
+~~~
+{: .language-python}
+
+and plot, but first import some nice formatting, which comes from the file `utils.py` in your copy of the lesson repository:
+
+~~~
+from utils import *
+~~~
+{: .language-python}
+
+and then,
+
+~~~
+histogram[:,"4j2b","data","nominal"].plot(histtype="fill", linewidth=1, edgecolor="grey")
+plt.legend(frameon=False)
+plt.title(">= 4 jets, >= 2 b-tags")
+plt.xlabel("$m_{bjj}$ [Gev]");
+plt.show()
+~~~
+{: .language-python}
+
+![](FIXME)
+
+## Coffea Processors
+
+
+
+
 ~~~
 
 ~~~
 {: .language-python}
-
-
-
 
 
 
