@@ -20,7 +20,7 @@ This episode is a recast of the [analysis demo](https://github.com/iris-hep/anal
 
 As was mentioned in the previous episode, we will be working towards a measurement of the top and anti-top quark production cross section $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
 
-For this analysis we will the following datasets:
+For this analysis we will use the following datasets:
 
 **FIX ME**
 
@@ -39,9 +39,9 @@ These pre-selection filters reduce the output of the files significantly to the 
 
 ## Building the basic analysis selection
 
-Here we will attempt to build some meaninful histograms by implementing the physics object selection requirements that were used by the CMS analysts that performed this analysis back in 2015.  For understanding the basics of the analysis implementation, we will work with events from a single file of one dataset.  Then, we will encapsulate our analysis in a Coffea *processor* and run it for all datasets: collisions, signal and background.
+Here we will attempt to build the histogram of a physical observable by implementing the physics object selection requirements that were used by the CMS analysts, who performed this analysis back in 2015.  For understanding the basics of the analysis implementation, we will first attempt the analysis over just one collissions dataset (just one small file) .  Then, we will encapsulate our analysis in a Coffea *processor* and run it for all datasets: collisions (wich we will call just *data*), signal and background.
 
-Here is a summary of the requirements they applied (originally they also considered some vetos on leptons, but we will not do that for this example):
+Here is a summary of the requirements used in the original CMS analysis:
 
 > ## Muon Selection
 >
@@ -69,14 +69,19 @@ Here is a summary of the requirements they applied (originally they also conside
 >
 {: .checklist}
 
-Don't forget to keep working on the python tools Docker container.  In order to advance, we need the improved schema on which we worked last section.  If you didn't manage to get it right, you can download it from [here](FIXME).  You can get it directly by doing
+Don't forget to fire up your python tools Docker container.  In order to advance, we need the improved schema on which we worked last section.  If you didn't manage to get it right, you can download it from [here](FIXME).  You can get it directly by doing
 
 ~~~
 wget FIXME
 ~~~
 {: .language-bash}
 
-Let'start fresh, import the needed libraries and open an example file (we include `numpy` this time and histograming/plotting libraries):
+>
+> If for some reason you need to start over, take into account that the file `coffeaAnalysis_basics.py` contains all the relevant commands needed to complete the basic analysis part.  You can find this file in your copy of the lesson repository.
+>
+{: .testimonial}
+
+Let'start fresh, import the needed libraries and open an example file (we include some additional libraries that will be needed libraries):
 
 ~~~
 import uproot
@@ -90,7 +95,7 @@ events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms
 ~~~
 {: .language-python}
 
-We will apply of the selection criteria and then make some meaningful histograms.
+We will apply the selection criteria and then make some a meaningful histogram.  Let's divide the selection requirements into *Objects selection* and *Event selection*.  
 
 ### Objects selection
 
@@ -398,9 +403,28 @@ plt.show()
 ~~~
 {: .language-python}
 
-![](FIXME)
+FIXME: Add image of the histogram obtained
 
 ## Coffea Processors
+
+We now see how simple it could be to construct an analysis using python tools.  Naturally, we would like to **scale it up to a far larger datasets** in any practical scenario. So the first expansion we can do to our analysis is to consider **running it over more datasets**, which include all of our *data*, our *background*, and the *signal*.  Additionally, we would like to show to how to **estimate a few sources of systematic uncertainty*, and for that we will be using, in some cases, additional datasets.  These *systematics* datasets are generaly *variations* of the *nominal* ones.
+
+To expand our analysis, we will use coffea **Processors**.  Processors are coffea's way of encapsulating an analysis in a way that is **deployment-neutral**. Once you have a Coffea analysis, you can throw it into a processor and use any of a variety of executors (e.g. Dask, Parsl, Spark) to chunk it up and run it across distributed workers. This makes scale-out simple and dynamic for users.  Unfortunately, we don't have the time to do such a demostration, but we will run it locally, with our vanilla coffea executor.
+
+> ## Key Point
+>
+> If you ever get to use executors that can parallelize across distributed workers (e.g., Dask, Parsl, Spark), note that we **can** do this in HEP. Events are independent of each other, so if we split our work up and ship it off to different workers, we aren't violating the data's integrity. Furthermore, since the output we seek is a histogram, our output is also independent of how the work is split up. As long as each worker maps its data to a histogram, the summation of those histograms will be identical to a single worker processing all of the data. In coffea, an object that behaves in this way is called an *accumulator*.
+>
+{: .keypoints}
+
+### Defining our coffea Processor
+
+The processor includes a lot of the physics analysis details:
+
+* event filtering and the calculation of observables,
+* event weighting,
+* calculating systematic uncertainties at the event and object level,
+* filling all the information into histograms that get aggregated and ultimately returned to us by coffea
 
 
 
