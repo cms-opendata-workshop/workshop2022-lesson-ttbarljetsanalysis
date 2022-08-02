@@ -38,8 +38,8 @@ The HistFactory template model can expressed like this:
 
 What's here?
 * $$ \vec{n} $$ describes the observed channel data and $$ \vec{a} $$ describes the auxiliary data e.g. from calibration
-* $$ \vec{a} $$ describes the unconstrained parameters (parameters of interest POI)and $$ \vec{\chi} $$ the constrained parameters (nuisance parameters NPs)
-* $$ n_{cb} $$: the observed number of events, $$ \nu_{nb}(\eta \vert \chi) $$: expected number of events
+* $$ \vec{\eta} $$ describes the unconstrained parameters (parameters of interest POI) and $$ \vec{\chi} $$ the constrained parameters (nuisance parameters NPs)
+* $$ n_{cb} $$: the observed number of events, $$ \nu_{nb}(\vec{\eta}, \vec{\chi}) $$: expected number of events
 * <span style="color:blue"> Main poisson p.d.f. for simultaneous measurement over multiple channels (or regions, like a signal region and a control region) and bins (over the histograms)</span>
 * <span style="color:red">Constraint p.d.f which encodes systematic uncertainties: the actual function used depends on the parameter (e.g. it may be a Gaussian)</span>
 
