@@ -4,13 +4,17 @@ teaching: 20
 exercises: 60
 questions:
 - "What is the general plan for the analysis?"
-- "What are the signal and background datasets that we will need?"
+- "What are the selection requirements?"
+- "How do I implement additional selection requirements?"
+- "What are Coffea Processors?"
+- "How do I run an analysis with Coffea?"
 objectives:
-- "1st learning objective"
-- "2nd learning objective"
+- Understand the general strategy for the analysis
+- Learn how implement basic selection requirements
+- Learn how to build Coffea Processors and run an analysis
 keypoints:
-- "keypoint 1"
-- "keypoint 2"
+- "Basic selection requirements are implemented very easily using columnar analysis"
+- "Coffea processors encapsulate an analysis so it becomes deployment-neutral"
 ---
 
 > ## Prerequisites
