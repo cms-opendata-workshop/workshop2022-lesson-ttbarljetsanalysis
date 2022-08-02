@@ -7,13 +7,16 @@ questions:
 - "What is columnar analysis?"
 - "Why do we use coffea?"
 - "What are coffea main components?"
+- "What are schemas?"
 objectives:
 - "Learn about the strategy we will follow for our analysis example."
 - "Learn what the difference is between columnar and loop analysis."
 - "Learn what coffea is and what the logic is of its different compoonets"
+- "Learn about what schemas are used for and how to modify them"
 keypoints :
 - "We will be perfoming a *real* but simplified HEP analysis using CMS Run2 open data using columnar analysis."
 - "Coffea is a framework which builds upons several tools to make columnar analysis more efficient in HEP."
+- "Schemas are a simple way of rearranging our data content so it is easier to manipulate"
 ---
 
 > ## Prerequisites
@@ -24,7 +27,7 @@ keypoints :
 > ~~~
 > {: .language-bash}
 > 
-> Also, download [this file](https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/trunk/agc_schema.py), which is our starting schema.  You can simply do:
+> Also, download [this file](https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/trunk/agc_schema.py), which is our starting schema.  Directly in your `/code` area (or locally in your `cms_open_data_python` directory) you can simply do:
 >
 > ~~~
 > wget  https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/trunk/agc_schema.py
@@ -46,7 +49,7 @@ which is characterized by one lepton (here we look at electrons and muons only),
 We will attempt to use tools that are built on modern, powerful and efficient python ecosystems.  In particular, we will use the **Columnar Object Framework For Effective Analysis** ([Coffea](https://coffeateam.github.io/coffea/)), which will provide us with *basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis*.
 
 >
-> Before we begin, we will run these commands in a jupyter notebook, which we will be starting in the python container as
+> Before we begin, let us mention that we will run these commands in a jupyter notebook, which can be started in the python container as
 > 
 > ~~~
 > jupyter-lab --ip=0.0.0.0 --no-browser
@@ -54,7 +57,7 @@ We will attempt to use tools that are built on modern, powerful and efficient py
 > {: .language-bash}
 > You can look at the prompt and get the right link to paste in your browser.
 >
-> You are welcome to do that as well or just follow along in python, interactively, i.e., start python as `python`.
+> You are welcome to do that as well or just follow along in python, interactively, i.e., start python as `python` and input the commands in the command line.
 {: .testimonial}
 
 

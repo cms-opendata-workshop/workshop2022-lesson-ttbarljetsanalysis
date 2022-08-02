@@ -31,14 +31,14 @@ This episode is a recast of the [analysis demo](https://github.com/iris-hep/anal
 
 ## Datasets and pre-selection
 
-As was mentioned in the previous episode, we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
+As it was mentioned in the previous episode, we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
 
 For this analysis we will use the following datasets:
 
 | type           | dataset            | variation       | CODP name                                                              | xsec [pb] | size (TB) | Rec ID |
 |----------------|--------------------|-----------------|------------------------------------------------------------------------|-----------|-----------|--------|
-| colisions data | data               | single muon     | /SingleMuon/Run2015D-16Dec2015-v1/MINIAOD                              |           | 1.4       | [24119](https://opendata.cern.ch/record/24119)  |
-|                |                    | single electron | /SingleElectron/Run2015D-08Jun2016-v1/MINIAOD                          |           | 2.6       | [24120](https://opendata.cern.ch/record/24120)  |
+| colisions data | data               | nominal         | /SingleMuon/Run2015D-16Dec2015-v1/MINIAOD                              |           | 1.4       | [24119](https://opendata.cern.ch/record/24119)  |
+|                |                    |                 | /SingleElectron/Run2015D-08Jun2016-v1/MINIAOD                          |           | 2.6       | [24120](https://opendata.cern.ch/record/24120)  |
 | signal         | ttbar              | nominal         | TT_TuneCUETP8M1_13TeV-powheg-pythia8                                   | 831.76    | 3.4       | 19980  |
 |                |                    | scaledown       | TT_TuneCUETP8M1_13TeV-powheg-scaledown-pythia8                         |           | 1.4       | 19983  |
 |                |                    | scaleup         | TT_TuneCUETP8M1_13TeV-powheg-scaleup-pythia8                           |           | 1.3       | 19985  |
@@ -50,12 +50,13 @@ For this analysis we will use the following datasets:
 |                |                    |                 | ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1     | 35.6      | 0.03      | 19412  |
 |                | wjets              | nominal         | WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8                     | 61526.7   | 3.8       | 20548  |
 
+The **nominal** variation samples are the regular samples used in the analysis while samples corresonding to other variations are used for estimating systematic uncertainties.  This will be discussed in the last episode.
 
 As you can see, several of these datasets are **quite large (TB in size)**, therefore we need to skim them.  Also, as you were able to see previously, running CMSSW EDAnalyzers over these data (with the POET code, for instance) could be quite **computing intensive**.  One could also estimate the time it would take to run over all the datasets we need using a single computer. To be efficient, you will need a computer cluster, but we will leave that for the Cloud Computing lesson. Fortunately, **we have prepared these skims already at CERN**, using CERN/CMS computing infrastructure. The *skimmed* files we will be using were obtained in essentially the same POET way, except that **we applied some *trigger* filtering and some *pre-selection* requirements**.
 
 We explicitly required:
 
-* That the events *fired* at least one of these **triggers**: `HLT_Ele22_eta2p1_WPLoose_Gsf`, `HLT_IsoMu20_v`, `HLT_IsoTkMu20_v`.  We assume these triggers were unprescaled, but you know now, one should really check.
+* That the events *fired* at least one of these **triggers**: `HLT_Ele22_eta2p1_WPLoose_Gsf`, `HLT_IsoMu20_v`, `HLT_IsoTkMu20_v`.  We assume these triggers were unprescaled, but you know now, one should really check (or ask!)
 * That the event contains either **at least one tight electron** with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$ **or at least one tight muon** with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$.
 
 A json file called `ntuples.json` was created in order to keep track of these files and their metadata.  You can find this file in your copy of the `workshop2022-lesson-ttbarljetsanalysis-payload` repository. 
@@ -94,9 +95,11 @@ Here is a summary of the **selection requirements** used in the [original CMS an
 {: .checklist}
 
 >
-> If for some reason you need to start over, take into account that the file `coffeaAnalysis_basics.py`, in your copy of the exercise repository, contains all the relevant commands needed to complete the basic analysis part.
+> If for some reason you need to start over, take into account that the file `coffeaAnalysis_basics.py`, in your copy of the exercise repository, contains all the relevant commands needed to complete the basic analysis part that is shown in this section.
 >
 {: .testimonial}
+
+Also remember, if you want to do work in a jupyter notebook you can start one with `jupyter-lab --ip=0.0.0.0 --no-browser` in your container.
 
 Let'start fresh, import the needed libraries and open an example file (we include some additional libraries that will be needed):
 
@@ -357,7 +360,7 @@ observable = ak.flatten(trijet_mass)
 
 > ## **Challenge**: Can you figure out what is happening above?
 >
-> Take some time to understand the logic of the above statements and explore the *awkward* methods used to achive the building of the ovbservable.
+> Take some time to understand the logic of the above statements and explore the *awkward* methods used to get the ovbservable.
 >
 {: .challenge}
 
@@ -380,7 +383,7 @@ histogram = hist.Hist.new.Reg(25, 50, 550, name="observable", label="observable 
 ~~~
 {: .language-python}
 
-This `histogram` placeholder also has the option of assigning a `Weight` to the data tha goes in.  This is because for simulated MC samples (backgrounds)
+This `histogram` placeholder is of type that can accep a `Weight` to the data tha goes in.  This is because for simulated MC samples (backgrounds)
 , we will need to normalize the number of events to the total integrated luminosity.
 
 By the way, if you look at the documentation,
@@ -401,6 +404,22 @@ you will find
 ~~~
 {: .output}
 
+It is useful at this point to do:
+
+~~~
+histogram.ndim
+histogram.axes
+~~~
+{: .language-python}
+
+in order to understand the structure a bit better.  You can see that this hist object is multidimensional holder for histograms, which makes it very convenient and very powerful. You could fill out the outter most *StrCategories* with several *processes* and *variations. You can *slice and dice*.  Here a very quick example: let's say that, once the histogram is filled (we haven't done that yet), you want to get the histograms which have to with the signal region.  Accessing them is very simple:
+
+~~~
+histogram[:,1,:,:]
+~~~
+{: .language-python}
+
+
 Now, let's fill in the histogram:
 
 ~~~
@@ -412,7 +431,7 @@ and then plot
 
 ~~~
 histogram[:,"4j2b","ttbar","nominal"].plot(histtype="fill", linewidth=1, edgecolor="grey", label='ttbar')
-plt.legend(frameon=False)
+plt.legend()
 plt.title(">= 4 jets, >= 2 b-tags")
 plt.xlabel("$m_{bjj}$ [Gev]");
 plt.show()
@@ -442,21 +461,254 @@ The processor includes a lot of the physics analysis details:
 * calculating systematic uncertainties at the event and object level,
 * filling all the information into histograms that get aggregated and ultimately returned to us by coffea
 
+In the `coffeaAnalysis_ttbarljets.py` in your copy of the repository you will find the definition of our **Processor**.  It is buil as a python class, which nicely encapsulates it and, as advertised, becomes independent of the *executor*.
 
-
-
+>
+> Inspect it briefly, you will recognize the basic ingredients that we already explored.  The only difference is that it has been modified so it allows for additional features like running over different **processes** and/or **variations** of them and filling in corresponding histograms.  
+>
+{: .challenge}
 
 ~~~
+#------------------------------------
+class TtbarAnalysis(processor_base):
+#------------------------------------
+    #--------------------
+    def __init__(self):
+    #--------------------
+        num_bins = 25
+        bin_low = 50
+        bin_high = 550
+        name = "observable"
+        label = "observable [GeV]"
+        #https://hist.readthedocs.io/en/latest/user-guide/quickstart.html
+        #StrCat = StrCategory
+        #https://hist.readthedocs.io/en/latest/banner_slides.html?highlight=StrCategory#many-axis-types
+        self.hist = (
+            hist.Hist.new.Reg(num_bins, bin_low, bin_high, name=name, label=label)
+            .StrCat(["4j1b", "4j2b"], name="region", label="Region")
+            .StrCat([], name="process", label="Process", growth=True)
+            .StrCat([], name="variation", label="Systematic variation", growth=True)
+            .Weight()
+        )
+    #-------------------------
+    def process(self, events):
+    #-------------------------
+        histogram = self.hist.copy()
+
+        process = events.metadata["process"]  # "ttbar" etc.
+        variation = events.metadata["variation"]  # "nominal", "scaledown", etc.
+
+        #print(f'Currently doing variation {variation} for {process}')
+
+        # normalization for MC
+        x_sec = events.metadata["xsec"]
+        nevts_total = events.metadata["nevts"]
+        # This truelumi number was obtained with
+        # brilcalc lumi -c web -i Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt -u /pb --normtag normtag_PHYSICS_2015.json  --begin 256630 --end 260627 > lumi2015D.txt
+        # lumi in units of /pb
+        lumi = 2256.38
+        if process != "data":
+            xsec_weight = x_sec * lumi / nevts_total
+        else:
+            xsec_weight = 1
+
+        #### systematics
+        # example of a simple flat weight variation, using the coffea nanoevents systematics feature
+        # https://github.com/CoffeaTeam/coffea/blob/20a7e749eea3b8de4880088d2f0e43f6ef9d7993/coffea/nanoevents/methods/base.py#L84
+        # Help on method add_systematic in module coffea.nanoevents.methods.base:
+        # add_systematic(name: str, kind: str, what: Union[str, List[str], Tuple[str]], varying_function: Callable)
+        # method of coffea.nanoevents.methods.base.NanoEventsArray instance
+        if process == "wjets":
+            events.add_systematic("scale_var", "UpDownSystematic", "weight", flat_variation)
+
+        # example on how to get jet energy scale / resolution systematics
+        # need to adjust schema to instead use coffea add_systematic feature, especially for ServiceX
+        # cannot attach pT variations to events.jet, so attach to events directly
+        # and subsequently scale pT by these scale factors
+        events["pt_nominal"] = 1.0
+        #events["pt_scale_up"] = 1.03
+        # we have already these corrections in our data for this workshop, so we might as well use them
+        # to assign a variation per jet and not per event. However, to avoid messing too much with this code, 
+        # try a silly thing just for fun: take the average of jet variations per event (fill out the None values with a default 1.03)
+        events['pt_scale_up'] = ak.fill_none(ak.mean(events.jet.corrptUp/events.jet.corrpt,axis=1),1.03)
+        events["pt_res_up"] = jet_pt_resolution(events.jet.corrpt)
+
+        pt_variations = ["pt_nominal", "pt_scale_up", "pt_res_up"] if variation == "nominal" else ["pt_nominal"]
+        for pt_var in pt_variations:
+
+            ### event selection
+            # based on https://link.springer.com/article/10.1007/JHEP09(2017)051
+
+            #object filters
+            selected_electrons = events.electron[(events.electron.pt > 30) & (abs(events.electron.eta)<2.1) & (events.electron.isTight == True) & (events.electron.sip3d < 4)]
+            selected_muons = events.muon[(events.muon.pt > 30) & (abs(events.muon.eta)<2.1) & (events.muon.isTight == True) & (events.muon.sip3d < 4) & (events.muon.pfreliso04DBCorr < 0.15)]
+            jet_filter = (events.jet.corrpt * events[pt_var] > 30) & (abs(events.jet.eta)<2.4)
+            selected_jets = events.jet[jet_filter]
+
+            # single lepton requirement
+            event_filters = ((ak.count(selected_electrons.pt, axis=1) + ak.count(selected_muons.pt, axis=1)) == 1)
+            # at least four jets
+            pt_var_modifier = events[pt_var] if "res" not in pt_var else events[pt_var][jet_filter]
+            event_filters = event_filters & (ak.count(selected_jets.corrpt * pt_var_modifier, axis=1) >= 4)
+            # at least one b-tagged jet ("tag" means score above threshold)
+            B_TAG_THRESHOLD = 0.8
+            event_filters = event_filters & (ak.sum(selected_jets.btag >= B_TAG_THRESHOLD, axis=1) >= 1)
+
+            # apply event filters
+            selected_events = events[event_filters]
+            selected_electrons = selected_electrons[event_filters]
+            selected_muons = selected_muons[event_filters]
+            selected_jets = selected_jets[event_filters]
+
+            for region in ["4j1b", "4j2b"]:
+                # further filtering: 4j1b CR with single b-tag, 4j2b SR with two or more tags
+                if region == "4j1b":
+                    region_filter = ak.sum(selected_jets.btag >= B_TAG_THRESHOLD, axis=1) == 1
+                    selected_jets_region = selected_jets[region_filter]
+                    # use HT (scalar sum of jet pT) as observable
+                    pt_var_modifier = events[event_filters][region_filter][pt_var] if "res" not in pt_var else events[pt_var][jet_filter][event_filters][region_filter]
+                    observable = ak.sum(selected_jets_region.corrpt * pt_var_modifier, axis=-1)
+
+                elif region == "4j2b":
+                    region_filter = ak.sum(selected_jets.btag > B_TAG_THRESHOLD, axis=1) >= 2
+                    selected_jets_region = selected_jets[region_filter]
+
+                    # reconstruct hadronic top as bjj system with largest pT
+                    # the jet energy scale / resolution effect is not propagated to this observable at the moment
+                    trijet = ak.combinations(selected_jets_region, 3, fields=["j1", "j2", "j3"])  # trijet candidates
+                    trijet["p4"] = trijet.j1 + trijet.j2 + trijet.j3  # calculate four-momentum of tri-jet system
+                    trijet["max_btag"] = np.maximum(trijet.j1.btag, np.maximum(trijet.j2.btag, trijet.j3.btag))
+                    trijet = trijet[trijet.max_btag > B_TAG_THRESHOLD]  # require at least one-btag in trijet candidates
+                    # pick trijet candidate with largest pT and calculate mass of system
+                    trijet_mass = trijet["p4"][ak.argmax(trijet.p4.pt, axis=1, keepdims=True)].mass
+                    observable = ak.flatten(trijet_mass)
+
+                ### histogram filling
+                if pt_var == "pt_nominal":
+                    # nominal pT, but including 2-point systematics
+                    histogram.fill(
+                            observable=observable, region=region, process=process, variation=variation, weight=xsec_weight
+                        )
+
+
+                    if variation == "nominal":
+                        # also fill weight-based variations for all nominal samples
+                        # this corresponds to the case for wjets included above as an example
+                        for weight_name in events.systematics.fields:
+                            for direction in ["up", "down"]:
+                                # extract the weight variations and apply all event & region filters
+                                weight_variation = events.systematics[weight_name][direction][f"weight_{weight_name}"][event_filters][region_filter]
+                                # fill histograms
+                                histogram.fill(
+                                    observable=observable, region=region, process=process, variation=f"{weight_name}_{direction}", weight=xsec_weight*weight_variation
+                                )
+
+                        # calculate additional systematics: b-tagging variations
+                        for i_var, weight_name in enumerate([f"btag_var_{i}" for i in range(4)]):
+                            for i_dir, direction in enumerate(["up", "down"]):
+                                # create systematic variations that depend on object properties (here: jet pT)
+                                if len(observable):
+                                    weight_variation = btag_weight_variation(i_var, selected_jets_region.corrpt)[:, i_dir]
+                                else:
+                                    weight_variation = 1 # no events selected
+                                histogram.fill(
+                                    observable=observable, region=region, process=process, variation=f"{weight_name}_{direction}", weight=xsec_weight*weight_variation
+                                )
+
+                elif variation == "nominal":
+                    # pT variations for nominal samples
+                    histogram.fill(
+                            observable=observable, region=region, process=process, variation=pt_var, weight=xsec_weight
+                        )
+        output = {"nevents": {events.metadata["dataset"]: len(events)}, "hist": histogram}
+
+        return output
+    # https://coffeateam.github.io/coffea/api/coffea.processor.ProcessorABC.html?highlight=postprocess#coffea.processor.ProcessorABC.postprocess
+    def postprocess(self, accumulator):
+        return accumulator
 
 ~~~
 {: .language-python}
 
 
+Right below this Processor class, in the `coffeaAnalysis_ttbarljets.py` file, you will find a snippet which fuilds the input for the Processor (i.e., for the analysis):
+
 
 ~~~
+# "Fileset" construction and metadata via utils.py file
+# Here, we gather all the required information about the files we want to process: paths to the files and asociated metadata
+# making use of the utils.py code in this repository
+fileset = construct_fileset(N_FILES_MAX_PER_SAMPLE, use_xcache=False)
+print(f"processes in fileset: {list(fileset.keys())}")
+print(f"\nexample of information in fileset:\n { {\n  'files': [{fileset['ttbar__nominal']['files'][0]}, ...],")
+print(f"  'metadata': {fileset['ttbar__nominal']['metadata']}\n } }")
+t0 = time.time()
+~~~
+{: .language-python}
+
+This is done with the help of the function `construct_fileset`, which is part of the `utils.py` file that you can also find in the repository.  After you import the code in this file (like it is done in the heade of `coffeaAnalysis_ttbarljets.py`),
 
 ~~~
-{: .output}
+# Slimmed version of:
+# https://github.com/iris-hep/analysis-grand-challenge/tree/main/analyses/cms-open-data-ttbar/utils
+# These file contain code for bookkeeping and cosmetics, as well as some boilerplate
+from utils import *
+~~~
+{: .language-python}
 
+you get some utilities like **styling** routines and the **fileset** builder.  Note that it is here where the **cross sections** for the different samples are stored.  Also, the `ntuples.json` file (also find it in the repository) is read here to manage the fileset that will be fed to the Processor.  We do some gymnastics also to adjust the normalization correctly.  Finally there is a function to save the histograms in a ROOT file.
+
+Next, in the `coffeaAnalysis_ttbarljets.py` file, you will see the call-out for the **executor**:
+
+
+~~~
+#Execute the data delivery pipeline
+#we don't have an external executor, so we use local coffea (IterativeExecutor())
+if PIPELINE == "coffea":
+    executor = processor.IterativeExecutor()
+    from coffea.nanoevents.schemas.schema import auto_schema
+    schema = AGCSchema if PIPELINE == "coffea" else auto_schema
+    run = processor.Runner(executor=executor, schema=schema, savemetrics=True, metadata_cache={})
+    all_histograms, metrics = run(fileset, "events", processor_instance=TtbarAnalysis())
+    all_histograms = all_histograms["hist"]
+~~~
+{: .language-python}
+
+It is here where you decide where to run.  Unfortunately, the datasets over which we are running are still quite large.  So running on the whole dataset in a single computer is not very efficient.  It will take a long time.  Here is where coffea really performs, because you can ship it to different worker nodes using some different **executors**.
+
+Finally note that there are some *auxiliary functions* at the beginning of the `coffeaAnalysis_ttbarljets.py` file and some *histogramming* routines at the end.  We won't worry about them for now.
+
+## Running an example of the analysis
+
+If you have a good connection you may get to run over just a single file per dataset by setting the `N_FILES_MAX_PER_SAMPLE = 1` at the beggining of the `coffeaAnalysis_ttbarljets.py` file.  Otherwise, do not worry we will provide you with the final `histograms.root` output after we ran over the whole dataset (for reference, it takes about 4 hours in a regular laptop).
+
+Let's run the demonstrator:
+
+~~~
+python coffeaAnalysis_ttbarljets.py
+~~~
+{: .language-bash}
+
+
+> ## While we wait, explore all these files
+>
+> Feel free to take time to explore the files that complement the analysis infrastructure.  Ask a a question!
+>
+{: .challenge}
+
+
+## Plotting
+
+> ## Plotting the final results
+> 
+> [Here](https://cernbox.cern.ch/index.php/s/SPcoOLArZCFFupN) you can download a full `histograms.root`.  It was obtained after 4 hours of running on a single computer.  It contains all the histograms produced by the analysis Processor.  We have prepared a plotting script for you to see the results:
+>
+> ~~~
+> python plotme.py
+> ~~~
+> {: .languagle-bash}
+{: .challenge}
+
+![](../fig/finalplot_ttbar.png){:width="60%"}
 
 {% include links.md %}

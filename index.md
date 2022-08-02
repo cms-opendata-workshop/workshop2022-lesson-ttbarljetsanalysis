@@ -20,10 +20,13 @@ permalink: index.html  # Is the only page that doesn't follow the pattern /:path
 {: .objectives}
 
 > ## Prerequisites
-> In order to complete this lesson you will need:
-> - an online connection
-> - to have the necessary environment and applications installed
-> - to have completed the basic physics objects lessons
+>
+> To follow this lesson you need to start the [*python tools Docker container*](https://cms-opendata-workshop.github.io/workshop2022-lesson-docker/03-docker-for-cms-opendata/index.html#python-tools-container) from the pre-exercises:
+>
+> ~~~
+> docker start -i my_python  #give the name of your container
+> ~~~
+> {: .language-bash}
 {: .prereq}
 
 {% include links.md %}
