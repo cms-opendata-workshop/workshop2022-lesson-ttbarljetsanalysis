@@ -16,16 +16,48 @@ keypoints :
 - "Coffea is a framework which builds upons several tools to make columnar analysis more efficient in HEP."
 ---
 
+> ## Prerequisites
+> In order to use the `coffea` framework for our analysis, we need to install these additional packages directly in our container.  We are adding 
+> `cabinetry` as well because we will use it later in our last episode.
+> ~~~
+> pip install vector hist mplhep coffea cabinetry
+> ~~~
+> {: .language-bash}
+> 
+> Also, download [this file](https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/trunk/agc_schema.py), which is our starting schema.  You can simply do:
+>
+> ~~~
+> wget  https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/trunk/agc_schema.py
+> ~~~
+> {: .language-bash}
+>
+{: .prereq}
+
+
 ## Introduction
 
-This simplified analysis will be working towards a measurement of the top and anti-top quark production cross section $$ \sigma_{t\bar{t}} $$.
+This simplified analysis will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.
 The data are produced in proton-proton collisions at $$\sqrt{s}$$ = 13 TeV at the beginning of Run 2 of the LHC. We will be examining the lepton+jets final state
 $$
 t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}
 $$
 which is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
 
-We will attempt to use tools that are built on modern, powerful and efficient python ecosystems.  In particular, we will use the *Columnar Object Framework For Effective Analysis* ([Coffea](https://coffeateam.github.io/coffea/)) which will provide us with *basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis*.
+We will attempt to use tools that are built on modern, powerful and efficient python ecosystems.  In particular, we will use the **Columnar Object Framework For Effective Analysis** ([Coffea](https://coffeateam.github.io/coffea/)), which will provide us with *basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis*.
+
+>
+> Before we begin, we will run these commands in a jupyter notebook, which we will be starting in the python container as
+> 
+> ~~~
+> jupyter-lab --ip=0.0.0.0 --no-browser
+> ~~~
+> {: .language-bash}
+> You can look at the prompt and get the right link to paste in your browser.
+>
+> You are welcome to do that as well or just follow along in python, interactively, i.e., start python as `python`.
+{: .testimonial}
+
+
 
 
 ## Columnar analysis basics with Awkward
@@ -42,7 +74,9 @@ import awkward as ak
 ~~~
 {: .language-python}
 
-Let's open an example file, which was produced with POET.  Using `uproot`,
+Let's open an example file. These are **flattened POET ntuples**.  As it was mentioned in the trigger lesson, we will be producing these skimmed ntuples for you.  You may recognize all the variables we had worked with before.  
+
+Using `uproot`,
 
 ~~~
 events = uproot.open('root://eospublic.cern.ch//eos/opendata/cms/upload/od-workshop/ws2021/myoutput_odws2022-ttbaljets-prodv2.0_merged.root')['events']
@@ -92,16 +126,16 @@ ak.num(muon_pt, axis=-1)
 ~~~
 {: .output}
 
-A quick note about axes in awkward: 0 is always the shallowest, while -1 is the deepest. In other words, axis=0 would tell us the number of subarrays (events), while axis=-1 would tell us the number of muons within each subarray.  This array is only of dimension 2, so `axis=1` or `axis=-1` are the same.  This usage is the same as for standard `numpy` arrays.
+A quick note about axes in awkward: **0 is always the shallowest, while -1 is the deepest**. In other words, axis=0 would tell us the number of subarrays (events), while axis=-1 would tell us the number of muons within each subarray.  This array is only of dimension 2, so `axis=1` or `axis=-1` are the same.  This usage is the same as for standard `numpy` arrays.
 
 ![](https://predictivehacks.com/wp-content/uploads/2020/08/numpy_arrays-1024x572.png)
 
 
-The traditional way of analyzing data in HEP involves the event loop. In this paradigm, we would write an explicit loop to go through every event (and through every field of an event that we wish to make a cut on). This method of analysis is rather bulky in comparison to the columnar approach, which (ideally) has no explicit loops at all! Instead, the fields of our data are treated as arrays and analysis is done by way of numpy-like array operations.
+The traditional way of analyzing data in HEP involves the event loop. In this paradigm, we would write an explicit loop to go through every event (and through every field of an event that we wish to make a cut on). This method of analysis is rather bulky in comparison to the columnar approach, which (ideally) has no explicit loops at all! Instead, the **fields of our data are treated as arrays and analysis is done by way of numpy-like array operations**.
 
 ![](https://raw.githubusercontent.com/iris-hep/analysis-grand-challenge/a4fd03a2a30120c33642abe585a96fed4a4d661d/workshops/agctools2022/coffea/utilities/columnar.png)
 
-Most simple cuts can be handled by masking. A mask is a Boolean array which is generated by applying a condition to a data array. For example, if we want only muons with pT > 10, our mask would be:
+Most simple cuts can be handled by masking. A **mask is a Boolean array** which is generated by applying a condition to a data array. For example, if we want only muons with pT > 10, our mask would be:
 
 ~~~
 print(muon_pt > 10)
@@ -113,9 +147,9 @@ print(muon_pt > 10)
 ~~~
 {: .output}
 
-Then, we can apply the mask to our data. The syntax follows other standard array selection operations: `data[mask]`. This will pick out only the elements of our data which correspond to a `True`.
+Then, we can apply the mask to our data. The syntax follows other **standard array selection operations**: `data[mask]`. This will pick out only the elements of our data which correspond to a `True`.
 
-Our mask in this case must have the same shape as our muons branch, and this is guaranteed to be the case since it is generated from the data in that branch. When we apply this mask, the output should have the same amount of events, but it should down-select muons - muons which correspond to False should be dropped. Let's compare to check:
+Our mask in this case **must have the same shape** as our muons branch, and this is guaranteed to be the case since it is generated from the data in that branch. When we apply this mask, the output should have the same amount of events, but it should down-select muons - muons which correspond to False should be dropped. Let's compare to check:
 
 ~~~
 print('Input:', muon_pt)
@@ -164,21 +198,16 @@ Awkward arrays let us access data in a columnar fashion, but that's just the fir
 
 In summary, coffea's features enter the analysis pipeline at every step. They improve the usability of our input (NanoEvents), enable us to map it to a histogram output (Hists), and allow us tools for scaling and deployment (Processors).
 
-In order to use the `coffea` framework and use it for our analysis, we need to install these additional packages directly in our container (or in your local setup if you managed to make everything work).  Please run this command if you haven't already.
 
-~~~
-pip install vector hist mplhep coffea
-~~~
-{: .language-bash}
 
 
 ### Coffea NanoEvents and Schemas: Making Data Physics-Friendly
 
 Before we can dive into our example analysis, we need to spruce up our data a bit.
 
-Let's turn our attention to `NanoEvents` and `schemas`. *Schemas* let us better organize our file and impose physics methods onto our data. There exist schemas for some standard file formats, most prominently NanoAOD (which will be, in the future, the main format in which CMS data will be made open), and there is a `BaseSchema` which operates much like uproot. The coffea development team welcomes community development of other schemas.
+Let's turn our attention to `NanoEvents` and `schemas`. *Schemas* let us better **organize our file and impose physics methods** onto our data. There exist **schemas for some standard file formats**, most prominently **NanoAOD** (which will be, in the future, the main format in which CMS data will be made open), and there is a `BaseSchema` which operates much like uproot. The coffea development team welcomes community development of other schemas.
 
-For the purposes of this tutorial, we already have a schema.  Again, this was prepared already by Mat Adamec for the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/e/agc-tools-2). Here, however, we will try to go into the details.
+For the purposes of this tutorial, **we already have a schema**.  Again, this was prepared already by Mat Adamec for the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/e/agc-tools-2). Here, however, we will try to go into the details.
 
 Before we start, don't forget to include the libraries we need, including now the coffea ones:
 
@@ -200,9 +229,9 @@ Remember the output we had above.  After loading the file, we saw a lot of branc
 
 By default, uproot (and `BaseSchema`) treats all of the muon branches as distinct branches with distinct data. This is not ideal, as some of our data is redundant, e.g., all of the `nmuon_*` branches better have the same counts. Further, we'd expect all the `muon_*` branches to have the same shape, as each muon should have an entry in each branch.
 
-The first benefit of instating a schema, then, is a *standardization of our fields*. It would be more succinct to create a general `muon` **collection** under which all of these branches (in NanoEvents, fields) with identical size can be housed, and to scrap the redundant ones. We can use `numbermuon` to figure out how many muons should be in each subarray (the counts, or offsets), and then fill the contents with each `muon_*` field. We can repeat this for the other branches.
+The first benefit of instating a schema, then, is a **standardization of our fields**. It would be more succinct to create a general `muon` **collection** under which all of these branches (in NanoEvents, fields) with identical size can be housed, and to scrap the redundant ones. We can use `numbermuon` to figure out how many muons should be in each subarray (the counts, or offsets), and then fill the contents with each `muon_*` field. We can repeat this for the other branches.
 
-We will, however, use a custom schema called `AGCSchema`, whose implementation resides in the `agc_schema.py` file in your copy of the `workshop2022-lesson-ttbarljetsanalysis-payload` repository.  
+We will, however, use a custom schema called `AGCSchema`, whose implementation resides in the `agc_schema.py` file you just downloaded.
 
 Let's open our example file again, but now, instead of directly using uproot, we use the `AGCSchema` class.  
 
@@ -238,9 +267,9 @@ agc_events.muon.fields
 ~~~
 {: .output}
 
-So, aesthetically, everything is much nicer. If we had a messier dataset, the schema can also standardize our names to get rid of any quirks. For example, every physics object property in our tree has an `n*` variable which, if you were to check their values, you would realize that they repeat.  They give just the numbe of objects in the field.  We need only one variable to check that, and for the muons would be `numbermuon`. This sort of features are irrelevant after the application of the schema, so we don't have to worry about it.
+So, aesthetically, everything is much nicer. If we had a messier dataset, the schema can also **standardize our names to get rid of any quirks**. For example, every physics object property in our tree has an `n*` variable which, if you were to check their values, you would realize that they repeat.  They give just the number of objects in the field.  We need only one variable to check that, and for the muons would be `numbermuon`. This sort of features are irrelevant after the application of the schema, so we don't have to worry about it.
 
-There are also other benefits to this structure: as we now have a collection object (`agc_events.muon`), there is a natural place to impose physics methods. By default, this collection object does nothing - it's just a category. But we're physicists, and we often want to deal with Lorentz vectors. Why not treat these objects as such?
+There are also other benefits to this structure: as we now have a collection object (`agc_events.muon`), there is a **natural place to impose physics methods**. By default, this collection object does nothing - it's just a category. But we're physicists, and we often want to deal with Lorentz vectors. Why not treat these objects as such?
 
 This behavior can be built fairly simply into a schema by specifying that it is a `PtEtaPhiELorentzVector` and having the appropriate fields present in each collection (in this case, `pt`, `eta`, `phi` and `e`). This makes mathematical operations on our muons well-defined:
 
@@ -281,7 +310,7 @@ agc_events.muon.x, agc_events.muon.y, agc_events.muon.z, agc_events.muon.mass
 ~~~
 {: .output}
 
-NanoEvents can also impose other features, such as cross-references in our data; for example, linking the muon jetidx to the jet collection. This is not implemented in our present schema.
+NanoEvents can also impose other features, such as **cross-references** in our data; for example, linking the muon jetidx to the jet collection. This is not implemented in our present schema.
 
 ### Let's take a look at the agc_schema.py file
 Anyone, in principle, can write a schema that suits particular needs and that could be *plugged* into the coffea insfrastructure.  Here we present a challenge to give you a felling of the kind of arrangements schemas can take care of.
@@ -290,67 +319,9 @@ Anyone, in principle, can write a schema that suits particular needs and that co
 >
 > If you check the variables above, you will notice that the `jet` object has an energy `e` recorded but also, as you learn from the physics objects lesson, `corre`, which is the corrected energy.  Inspect and study the file `agc_schema.py` to fix this problem and pass this `corre` energy as the energy to the LorentzVector and not the uncorrected `e` energy.
 >
+> > ## Solution
+> >
+> > You can download the solution from [here](https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/agc_schema.py)
+> {: .solution}
 {: .challenge}
 
-The solution to the above challege will be posted later.
-
-<!-- ~~~
-# https://github.com/CoffeaTeam/coffea/blob/master/coffea/nanoevents/transforms.py
-from coffea.nanoevents import transforms
-
-# https://coffeateam.github.io/coffea/modules/coffea.nanoevents.methods.base.html
-# https://github.com/CoffeaTeam/coffea/blob/master/coffea/nanoevents/methods/base.py
-# https://coffeateam.github.io/coffea/modules/coffea.nanoevents.methods.vector.html
-# https://github.com/CoffeaTeam/coffea/blob/master/coffea/nanoevents/methods/vector.py
-from coffea.nanoevents.methods import base, vector
-
-#https://coffeateam.github.io/coffea/api/coffea.nanoevents.BaseSchema.html
-#https://github.com/CoffeaTeam/coffea/blob/master/coffea/nanoevents/schemas/base.py
-#https://github.com/CoffeaTeam/coffea/blob/82df7fa06348398346fa365d9f1408fa962e805a/coffea/nanoevents/schemas/base.py#L24
-#copare with zip: https://docs.python.org/3/library/functions.html#zip
-from coffea.nanoevents.schemas.base import BaseSchema, zip_forms
-
-
-class AGCSchema(BaseSchema):
-    def __init__(self, base_form):
-        super().__init__(base_form)
-        self._form["contents"] = self._build_collections(self._form["contents"])
-
-    def _build_collections(self, branch_forms):
-        names = set([k.split('_')[0] for k in branch_forms.keys() if not (k.startswith('number'))])
-        # Remove n(names) from consideration. It's safe to just remove names that start with n, as nothing else begins with n in our fields.
-        # Also remove GenPart, PV and MET because they deviate from the pattern of having a 'number' field.
-        names = [k for k in names if not (k.startswith('n') | k.startswith('met') | k.startswith('GenPart') | k.startswith('PV') | k.startswith('trig') | k.startswith('btag'))]
-        output = {}
-        for name in names:
-            #drop branches that are not needed
-            offsets = transforms.counts2offsets_form(branch_forms['number' + name])
-            #content = {k[len(name)+1:]: branch_forms[k] for k in branch_forms if (k.startswith(name + "_") & (k[len(name)+1:] != 'e'))}
-            content = {k[len(name)+1:]: branch_forms[k] for k in branch_forms if (k.startswith(name + "_") & (k[len(name)+1:] != 'e') & (k[len(name)+1:] != 'corre'))}
-            # Add energy separately so its treated correctly by the p4 vector.
-            # It expects 'energy' and not 'e'
-            # https://coffeateam.github.io/coffea/api/coffea.nanoevents.methods.vector.PtEtaPhiELorentzVector.html
-            if ( (name == 'jet') or (name == 'fatjet')):
-                content['energy'] = branch_forms[name+'_corre']
-            else:
-                content['energy'] = branch_forms[name+'_e']
-            # Check for LorentzVector
-            output[name] = zip_forms(content, name, 'PtEtaPhiELorentzVector', offsets=offsets)
-
-        # Handle GenPart, PV, MET, trig and btag. Note that all the nPV_*'s should be the same. We just use one.
-        output['met'] = zip_forms({k[len('met')+1:]: branch_forms[k] for k in branch_forms if k.startswith('met_')}, 'met')
-        output['trig'] = zip_forms({k[len('trig')+1:]: branch_forms[k] for k in branch_forms if k.startswith('trig_')}, 'trig')
-        output['btag'] = zip_forms({k[len('btag')+1:]: branch_forms[k] for k in branch_forms if k.startswith('btag_')}, 'btag')
-        #output['GenPart'] = zip_forms({k[len('GenPart')+1:]: branch_forms[k] for k in branch_forms if k.startswith('GenPart_')}, 'GenPart', offsets=transforms.counts2offsets_form(branch_forms['numGenPart']))
-        output['PV'] = zip_forms({k[len('PV')+1:]: branch_forms[k] for k in branch_forms if (k.startswith('PV_') & ('npvs' not in k))}, 'PV', offsets=transforms.counts2offsets_form(branch_forms['nPV_x']))
-        return output
-
-    @property
-    def behavior(self):
-        behavior = {}
-        behavior.update(base.behavior)
-        behavior.update(vector.behavior)
-        return behavior
-~~~
-{: .language-python}
- -->
