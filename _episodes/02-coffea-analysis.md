@@ -13,35 +13,59 @@ keypoints:
 - "keypoint 2"
 ---
 
+> ## Prerequisites
+>
+> For this episode please go to your `python` Docker container and clone the repository for this exercise:
+>
+> ~~~
+> git clone https://github.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload.git
+>
+> cd workshop2022-lesson-ttbarljetsanalysis-payload
+> ~~~
+> {: .language-bash}
+>
+{: .prereq}
+
 
 This episode is a recast of the [analysis demo](https://github.com/iris-hep/analysis-grand-challenge/blob/main/analyses/cms-open-data-ttbar/coffea.ipynb) presented by Alexander Held at the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/event/1126109/). Our attempt is to make it more understandable by paying a bit more attention to the details.
 
 ## Datasets and pre-selection
 
-As was mentioned in the previous episode, we will be working towards a measurement of the top and anti-top quark production cross section $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
+As was mentioned in the previous episode, we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.  The lepton+jets final state $$t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}$$ is characterized by one lepton (here we look at electrons and muons only), significant missing transverse energy, and four jets, two of which are identified as b-jets.
 
 For this analysis we will use the following datasets:
 
-**FIX ME**
+| type           | dataset            | variation       | CODP name                                                              | xsec [pb] | size (TB) | Rec ID |
+|----------------|--------------------|-----------------|------------------------------------------------------------------------|-----------|-----------|--------|
+| colisions data | data               | single muon     | /SingleMuon/Run2015D-16Dec2015-v1/MINIAOD                              |           | 1.4       | [24119](https://opendata.cern.ch/record/24119)  |
+|                |                    | single electron | /SingleElectron/Run2015D-08Jun2016-v1/MINIAOD                          |           | 2.6       | [24120](https://opendata.cern.ch/record/24120)  |
+| signal         | ttbar              | nominal         | TT_TuneCUETP8M1_13TeV-powheg-pythia8                                   | 831.76    | 3.4       | 19980  |
+|                |                    | scaledown       | TT_TuneCUETP8M1_13TeV-powheg-scaledown-pythia8                         |           | 1.4       | 19983  |
+|                |                    | scaleup         | TT_TuneCUETP8M1_13TeV-powheg-scaleup-pythia8                           |           | 1.3       | 19985  |
+|                |                    | ME_var          | TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8                         |           | 1.3       | 19949  |
+|                |                    | PS_var          | TT_TuneEE5C_13TeV-powheg-herwigpp                                      |           | 0.8       | 19999  |
+| backgrounds    | single_top_t_chan  | nominal         | ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1       | 44.33     | 0.52      | 19397  |
+|                | single_atop_t_chan | nominal         | ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1 | 26.38     | 0.042     | 19407  |
+|                | single_top_tW      | nominal         | ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1         | 35.6      | 0.03      | 19419  |
+|                |                    |                 | ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1     | 35.6      | 0.03      | 19412  |
+|                | wjets              | nominal         | WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8                     | 61526.7   | 3.8       | 20548  |
 
 
-As you can see for yourself, several of these datasets are quite large (TB in size), therefore we need to skim them.  Also, as you were able to see previously, running CMSSW EDAnalyzers over these data (with the POET code, for instance) could be quite computing intensive.  One could also estimate the time it would take to run over all the datasets we need using a single computer. To be efficient, you will need a computer cluster, but we will leave that for the Cloud Computing lesson. Fortunately, we have prepared these skims already at CERN, using CERN/CMS computing infrastructure. The *skimmed* files we will be using were obtained in essentially the same POET way, except that we applied some *trigger* filtering and some *pre-selection* requirements.
+As you can see, several of these datasets are **quite large (TB in size)**, therefore we need to skim them.  Also, as you were able to see previously, running CMSSW EDAnalyzers over these data (with the POET code, for instance) could be quite **computing intensive**.  One could also estimate the time it would take to run over all the datasets we need using a single computer. To be efficient, you will need a computer cluster, but we will leave that for the Cloud Computing lesson. Fortunately, **we have prepared these skims already at CERN**, using CERN/CMS computing infrastructure. The *skimmed* files we will be using were obtained in essentially the same POET way, except that **we applied some *trigger* filtering and some *pre-selection* requirements**.
 
 We explicitly required:
 
-* That the events *fired* at least one of these triggers: `HLT_Ele22_eta2p1_WPLoose_Gsf`, `HLT_IsoMu20_v`, `HLT_IsoTkMu20_v`.  We assume these triggers were unprescaled, but you know now, one should really check.
-* That the event contains either at least one `tight` electron with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$ or at least one `tight` muon with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$.
+* That the events *fired* at least one of these **triggers**: `HLT_Ele22_eta2p1_WPLoose_Gsf`, `HLT_IsoMu20_v`, `HLT_IsoTkMu20_v`.  We assume these triggers were unprescaled, but you know now, one should really check.
+* That the event contains either **at least one tight electron** with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$ **or at least one tight muon** with $$p_{T} > 26$$ and $$\lvert\eta\rvert<2.1$$.
 
-These pre-selection filters reduce the output of the files significantly to the point that we a single file per each dataset is manageable.  A json file called `ntuples.json` was created in order to keep track of them and their metadata.  You can find this file in your copy of the `workshop2022-lesson-ttbarljetsanalysis-payload` repository. Ther is an additional file colled `ntuples_reduced.json`, which can be used if you are connecting from outside or decided not to download the datasets previously.
-
-**FIXME**: show the json file here
+A json file called `ntuples.json` was created in order to keep track of these files and their metadata.  You can find this file in your copy of the `workshop2022-lesson-ttbarljetsanalysis-payload` repository. 
 
 
 ## Building the basic analysis selection
 
-Here we will attempt to build the histogram of a physical observable by implementing the physics object selection requirements that were used by the CMS analysts, who performed this analysis back in 2015.  For understanding the basics of the analysis implementation, we will first attempt the analysis over just one collissions dataset (just one small file) .  Then, we will encapsulate our analysis in a Coffea *processor* and run it for all datasets: collisions (wich we will call just *data*), signal and background.
+Here we will attempt to build the histogram of a physical observable by implementing the physics object selection requirements that were used by the CMS analysts, who performed this analysis back in 2015.  For understanding the basics of the analysis implementation, **we will first attempt the analysis over just one collissions dataset (just one small file)**.  Then, we will **encapsulate** our analysis in a Coffea *processor* and run it for all datasets: collisions (wich we will call just *data*), signal and background.
 
-Here is a summary of the requirements used in the original CMS analysis:
+Here is a summary of the **selection requirements** used in the [original CMS analysis](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf):
 
 > ## Muon Selection
 >
@@ -69,19 +93,12 @@ Here is a summary of the requirements used in the original CMS analysis:
 >
 {: .checklist}
 
-Don't forget to fire up your python tools Docker container.  In order to advance, we need the improved schema on which we worked last section.  If you didn't manage to get it right, you can download it from [here](FIXME).  You can get it directly by doing
-
-~~~
-wget FIXME
-~~~
-{: .language-bash}
-
 >
-> If for some reason you need to start over, take into account that the file `coffeaAnalysis_basics.py` contains all the relevant commands needed to complete the basic analysis part.  You can find this file in your copy of the lesson repository.
+> If for some reason you need to start over, take into account that the file `coffeaAnalysis_basics.py`, in your copy of the exercise repository, contains all the relevant commands needed to complete the basic analysis part.
 >
 {: .testimonial}
 
-Let'start fresh, import the needed libraries and open an example file (we include some additional libraries that will be needed libraries):
+Let'start fresh, import the needed libraries and open an example file (we include some additional libraries that will be needed):
 
 ~~~
 import uproot
@@ -89,13 +106,14 @@ import numpy as np
 import awkward as ak
 import hist
 import matplotlib.pyplot as plt
+import mplhep as hep
 from coffea.nanoevents import NanoEventsFactory, BaseSchema
 from agc_schema import AGCSchema
-events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms/upload/od-workshop/ws2021/myoutput_odws2022-ttbaljets-prodv2.0_merged.root', schemaclass=AGCSchema, treepath='events').events()
+events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms/upload/POET/23-Jul-22/RunIIFall15MiniAODv2_TT_TuneCUETP8M1_13TeV-powheg-pythia8_flat/00EFE6B3-01FE-4FBF-ADCB-2921D5903E44_flat.root', schemaclass=AGCSchema, treepath='events').events()
 ~~~
 {: .language-python}
 
-We will apply the selection criteria and then make some a meaningful histogram.  Let's divide the selection requirements into *Objects selection* and *Event selection*.  
+We will **apply the selection criteria** and then **make a meaningful histogram**.  Let's divide the selection requirements into *Objects selection* and *Event selection*.  
 
 ### Objects selection
 
@@ -146,12 +164,12 @@ ak.num(selected_electrons, axis=0)
 Also, check one particular subarray to see if the applied requirements make sense:
 
 ~~~
-events.muon.pt[0]
-events.muon.eta[0]
-events.muon.isTight[0]
-selected_muons.pt[0]
-selected_muons.eta[0]
-selected_muons.isTight[0]
+events.muon.pt[4]
+events.muon.eta[4]
+events.muon.isTight[4]
+selected_muons.pt[4]
+selected_muons.eta[4]
+selected_muons.isTight[4]
 ~~~
 {: .language-python}
 
@@ -272,7 +290,7 @@ count(array, axis=None, keepdims=False, mask_identity=False)
 Let's work on the single lepton requirement.  Remember, the criteria indicates that we will only consider events with exactly one electron or exactly one muon.  Let'see how we can do this:
 
 ~~~
-event_filters = (ak.count(selected_electrons.pt, axis=1) & ak.count(selected_muons.pt, axis=1) == 1)
+event_filters = ((ak.count(selected_electrons.pt, axis=1) + ak.count(selected_muons.pt, axis=1)) == 1)
 ~~~
 {: .language-python}
 
@@ -344,7 +362,12 @@ observable = ak.flatten(trijet_mass)
 {: .challenge}
 
 
-### Visualize the observable
+### Histogramming and plotting
+
+More information on this topic, including a very instructive video, can be found in one of the tutorials of the [IRIS-HEP AGC Tools 2021 Workshop](https://indico.cern.ch/event/1076231/timetable/?view=standard#12-histogramming-visualization).  We will not go into the details here, but just show you some examples.
+
+We will use `Hist` from the `hist` package.  
+
 
 So, now we have a flat array for our observable. What else do we need for plotting? Well, a histogram is essentially a way to reduce our data. We can't just plot every value of *trijet* mass, so we divide up our range of masses into n bins across some reasonable range. Thus, we need to define the mapping for our reduction; defining the number of bins and the range is sufficient for this. This is called a `Regular` axis in the `hist.Hist` package.
 
@@ -381,21 +404,14 @@ you will find
 Now, let's fill in the histogram:
 
 ~~~
-histogram.fill(observable=observable, region="4j2b", process="collisons", variation="none", weight=1)
+histogram.fill(observable=observable, region="4j2b", process="ttbar", variation="nominal", weight=1)
 ~~~
 {: .language-python}
 
-and plot, but first import some nice formatting, which comes from the file `utils.py` in your copy of the lesson repository:
+and then plot
 
 ~~~
-from utils import *
-~~~
-{: .language-python}
-
-and then,
-
-~~~
-histogram[:,"4j2b","data","nominal"].plot(histtype="fill", linewidth=1, edgecolor="grey")
+histogram[:,"4j2b","ttbar","nominal"].plot(histtype="fill", linewidth=1, edgecolor="grey", label='ttbar')
 plt.legend(frameon=False)
 plt.title(">= 4 jets, >= 2 b-tags")
 plt.xlabel("$m_{bjj}$ [Gev]");
@@ -403,17 +419,17 @@ plt.show()
 ~~~
 {: .language-python}
 
-FIXME: Add image of the histogram obtained
+![](../fig/thad.png)
 
 ## Coffea Processors
 
 We now see how simple it could be to construct an analysis using python tools.  Naturally, we would like to **scale it up to a far larger datasets** in any practical scenario. So the first expansion we can do to our analysis is to consider **running it over more datasets**, which include all of our *data*, our *background*, and the *signal*.  Additionally, we would like to show to how to **estimate a few sources of systematic uncertainty*, and for that we will be using, in some cases, additional datasets.  These *systematics* datasets are generaly *variations* of the *nominal* ones.
 
-To expand our analysis, we will use coffea **Processors**.  Processors are coffea's way of encapsulating an analysis in a way that is **deployment-neutral**. Once you have a Coffea analysis, you can throw it into a processor and use any of a variety of executors (e.g. Dask, Parsl, Spark) to chunk it up and run it across distributed workers. This makes scale-out simple and dynamic for users.  Unfortunately, we don't have the time to do such a demostration, but we will run it locally, with our vanilla coffea executor.
+To expand our analysis, we will use coffea **Processors**.  Processors are coffea's way of **encapsulating an analysis** in a way that is **deployment-neutral**. Once you have a Coffea analysis, you can throw it into a processor and use any of a variety of executors (e.g. Dask, Parsl, Spark) to chunk it up and run it across distributed workers. This makes scale-out simple and dynamic for users.  Unfortunately, we don't have the time to do such a demostration, but we will run it locally, with our vanilla coffea executor.
 
 > ## Key Point
 >
-> If you ever get to use executors that can parallelize across distributed workers (e.g., Dask, Parsl, Spark), note that we **can** do this in HEP. Events are independent of each other, so if we split our work up and ship it off to different workers, we aren't violating the data's integrity. Furthermore, since the output we seek is a histogram, our output is also independent of how the work is split up. As long as each worker maps its data to a histogram, the summation of those histograms will be identical to a single worker processing all of the data. In coffea, an object that behaves in this way is called an *accumulator*.
+> If you ever get to use **executors** that can parallelize across distributed workers (e.g., Dask, Parsl, Spark), note that we **can** do this in HEP. Events are independent of each other, so if we split our work up and ship it off to different workers, we aren't violating the data's integrity. Furthermore, since the output we seek is a histogram, our output is also independent of how the work is split up. As long as each worker maps its data to a histogram, the summation of those histograms will be identical to a single worker processing all of the data. In coffea, an object that behaves in this way is called an *accumulator*.
 >
 {: .keypoints}
 
@@ -425,6 +441,7 @@ The processor includes a lot of the physics analysis details:
 * event weighting,
 * calculating systematic uncertainties at the event and object level,
 * filling all the information into histograms that get aggregated and ultimately returned to us by coffea
+
 
 
 
