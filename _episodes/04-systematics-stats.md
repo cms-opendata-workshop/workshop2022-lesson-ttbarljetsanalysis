@@ -34,7 +34,7 @@ we will be using the cabinetry package, which is a python library for constructi
 implementing HistFactory models.
 
 The HistFactory template model can expressed like this:
-![](/assets/img/hf_pdf.png){:width="50%"}
+![](../assets/img/hf_pdf.png){:width="50%"}
 
 What's here?
 * $$ \vec{n} $$ describes the observed channel data and $$ \vec{a} $$ describes the auxiliary data e.g. from calibration
@@ -111,11 +111,11 @@ root [1] TBrowser b
 
 Click on one of the histogram titles on the left ofr `4j1b` to view it:
 
-![](/assets/img/4j1b_ttbar.png){:width="50%"}
+![](../assets/img/4j1b_ttbar.png){:width="50%"}
 
 Click on another for `4j2b`:
 
-![](/assets/img/4j2b_ttbar.png){:width="50%"}
+![](../assets/img/4j2b_ttbar.png){:width="50%"}
 
 Recall that our observable for the `4j1b` control region is the scalar sum of jet transverse momentum, $$ H_{T} $$ and our observable for the `4j2b` signal region is the mass of b-jet system $$ m_{b_{jj}} $$.
 
@@ -270,7 +270,7 @@ pull_fig = cabinetry.visualize.pulls(
 ~~~
 {: .language-python}
 
-![](/assets/img/pulls.png){:width="50%"}
+![](../assets/img/pulls.png){:width="50%"}
 
 
 Note that the figures produced by running the script or your commands are to be found in the
@@ -295,8 +295,8 @@ figs = cabinetry.visualize.data_mc(model_prediction_postfit, data, close_figure=
 {: .language-python}
 
 We can see that there is very good post-fit agreement:
-![](/assets/img/4j1b-CR_postfit.png){:width="50%"}
-![](/assets/img/4j2b-SR_postfit.png){:width="50%"}
+![](../assets/img/4j1b-CR_postfit.png){:width="50%"}
+![](../assets/img/4j2b-SR_postfit.png){:width="50%"}
 
 ## References and further reading
 
