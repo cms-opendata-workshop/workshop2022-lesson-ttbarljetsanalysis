@@ -3,18 +3,161 @@ title: "Systematics and Statistics"
 teaching: 90
 exercises: 0
 questions:
+- "How are systematic variations handled in Coffea?"
 - "How do we perform statistical inference?"
 - "What tools do we use?"
 - "How do we visualize and interpret our results?"
 objectives:
+- "Explore some examples for adding systematic variations in Coffea"
 - "Learn how to construct statistical models."
 - "Learn how to interpret these statistical models."
 keypoints:
+- "Systematic variations are conveniently handled with Coffea"
 - "We  construct statistical models to estimate systematics in our analysis."
-- "cabinetry and pyhf are the tools we use here."
+- "`cabinetry` and `pyhf` are the tools we use here."
 ---
 
-## Introduction
+## Systematics in Coffea
+
+Let' explore the different ways in which one can introduce the estimation of systematic uncertainties in Coffea.  A few examples, which are relevant for our analysis, have been implemented by the original $$t\bar{t}$$ AGC demonstration.  Of course, they are part of our `coffeaAnalysis_ttbarljets.py` code.  Let's explore the different pieces:
+
+Before, we begin, note that a multidimensional array for histograms has been booked:
+
+~~~
+#--------------------
+    def __init__(self):
+    #--------------------
+        num_bins = 25
+        bin_low = 50
+        bin_high = 550
+        name = "observable"
+        label = "observable [GeV]"
+        #https://hist.readthedocs.io/en/latest/user-guide/quickstart.html
+        #StrCat = StrCategory
+        #https://hist.readthedocs.io/en/latest/banner_slides.html?highlight=StrCategory#many-axis-types
+        self.hist = (
+            hist.Hist.new.Reg(num_bins, bin_low, bin_high, name=name, label=label)
+            .StrCat(["4j1b", "4j2b"], name="region", label="Region")
+            .StrCat([], name="process", label="Process", growth=True)
+            .StrCat([], name="variation", label="Systematic variation", growth=True)
+            .Weight()
+        )
+~~~
+{: .language-python}
+
+The different **processes** (associated with our main datasets for data, signal and backgrounds) and **variations** (also datasets but variations of the *nominal* one) are passed to the Processor:
+
+~~~
+ #-------------------------
+    def process(self, events):
+    #-------------------------
+        histogram = self.hist.copy()
+
+        process = events.metadata["process"]  # "ttbar" etc.
+        variation = events.metadata["variation"]  # "nominal", "scaledown", etc.
+
+        #print(f'Currently doing variation {variation} for {process}')
+~~~
+{: .language-python}
+
+Monte Carlo simulations are normalized to the actual luminosity.  Cross sections and numbers of total events for the different samples are also passed to the Processor.  They are handled by the `utils.py` program, as you may remember:
+
+~~~
+# normalization for MC
+        x_sec = events.metadata["xsec"]
+        nevts_total = events.metadata["nevts"]
+        # This lumi number was obtained with
+        # brilcalc lumi -c web -i Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt -u /pb --normtag normtag_PHYSICS_2015.json  --begin 256630 --end 260627 > lumi2015D.txt
+        # lumi in units of /pb
+        lumi = 2256.38
+        if process != "data":
+            xsec_weight = x_sec * lumi / nevts_total
+        else:
+            xsec_weight = 1
+~~~
+{: .language-python}
+
+There are several ways in which one can introduce systematic variations.  A built-in option provided by Coffea, `add_systematics`, is the easiest.  Here an example of a made up variation for the scale of the `wjets` contribution:
+
+~~~
+#### systematics
+        # example of a simple flat weight variation, using the coffea nanoevents systematics feature
+        # https://github.com/CoffeaTeam/coffea/blob/20a7e749eea3b8de4880088d2f0e43f6ef9d7993/coffea/nanoevents/methods/base.py#L84
+        # Help on method add_systematic in module coffea.nanoevents.methods.base:
+        # add_systematic(name: str, kind: str, what: Union[str, List[str], Tuple[str]], varying_function: Callable)
+        # method of coffea.nanoevents.methods.base.NanoEventsArray instance
+        if process == "wjets":
+            events.add_systematic("scale_var", "UpDownSystematic", "weight", flat_variation)
+~~~
+{: .language-python}
+
+We do have per-jet variations in our ntuples now, but by the time this AGC demonstrator was written we did not.  This is an example of how to add variatinos for jet energy scale and resolution with a per-event *number*.  To make use of the information we have without varying the code too much, we test a silly average for the jet energy scale:
+
+~~~
+# example on how to get jet energy scale / resolution systematics
+        # need to adjust schema to instead use coffea add_systematic feature, especially for ServiceX
+        # cannot attach pT variations to events.jet, so attach to events directly
+        # and subsequently scale pT by these scale factors
+        events["pt_nominal"] = 1.0
+        #events["pt_scale_up"] = 1.03
+        # we have already these corrections in our data for this workshop, so we might as well use them
+        # to assign a variation per jet and not per event. However, to avoid messing too much with this code, 
+        # try a silly thing just for fun: take the average of jet variations per event (fill out the None values with a default 1.03)
+        events['pt_scale_up'] = ak.fill_none(ak.mean(events.jet.corrptUp/events.jet.corrpt,axis=1),1.03)
+        events["pt_res_up"] = jet_pt_resolution(events.jet.corrpt)
+
+        pt_variations = ["pt_nominal", "pt_scale_up", "pt_res_up"] if variation == "nominal" else ["pt_nominal"]
+
+~~~
+{: .language-python}
+
+The routine then loops over these different types of variations also separating the two signal and control regions, performin the same basic analysis we defined before:
+
+~~~
+for pt_var in pt_variations:
+    ...
+    for region in ["4j1b", "4j2b"]:
+
+~~~
+{: .language-python}
+
+For the nominal samples, it os this snippet which introduces the scale variation which might have been included earlier (this is the case for the `wjets` above):
+
+~~~
+if variation == "nominal":
+                        # also fill weight-based variations for all nominal samples
+                        # this corresponds to the case for wjets included above as an example
+                        for weight_name in events.systematics.fields:
+                            for direction in ["up", "down"]:
+                                # extract the weight variations and apply all event & region filters
+                                weight_variation = events.systematics[weight_name][direction][f"weight_{weight_name}"][event_filters][region_filter]
+                                # fill histograms
+                                histogram.fill(
+                                    observable=observable, region=region, process=process, variation=f"{weight_name}_{direction}", weight=xsec_weight*weight_variation
+                                )
+
+~~~
+{: .language-python}
+
+Finally an example of how to generate variations that may depend on objects properties, like jet $$p_{T}$$ for the b-tagging.  Note that we already have this variations included in our ntuples but chose not to use them to preserve this version of the demonstration:
+
+~~~
+# calculate additional systematics: b-tagging variations
+                        for i_var, weight_name in enumerate([f"btag_var_{i}" for i in range(4)]):
+                            for i_dir, direction in enumerate(["up", "down"]):
+                                # create systematic variations that depend on object properties (here: jet pT)
+                                if len(observable):
+                                    weight_variation = btag_weight_variation(i_var, selected_jets_region.corrpt)[:, i_dir]
+                                else:
+                                    weight_variation = 1 # no events selected
+                                histogram.fill(
+                                    observable=observable, region=region, process=process, variation=f"{weight_name}_{direction}", weight=xsec_weight*weight_variation
+                                )
+~~~
+{: .language-python}
+
+
+## Introduction to stats analysis
 
 >
 >It's beyond the scope of this tutorial to cover a lot of statistical background needed

@@ -39,7 +39,7 @@ keypoints :
 
 ## Introduction
 
-This simplified analysis will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.
+In this simplified analysis we will be working towards a measurement of the [top and anti-top quark production cross section](https://link.springer.com/content/pdf/10.1007/JHEP09(2017)051.pdf) $$ \sigma_{t\bar{t}} $$.
 The data are produced in proton-proton collisions at $$\sqrt{s}$$ = 13 TeV at the beginning of Run 2 of the LHC. We will be examining the lepton+jets final state
 $$
 t\bar{t} \rightarrow (bW^{+})(\bar{b}W_{-}) \rightarrow bq\bar{q} bl^{-}\bar{\nu_{l}}
@@ -65,7 +65,7 @@ We will attempt to use tools that are built on modern, powerful and efficient py
 
 ## Columnar analysis basics with Awkward
 
-Note:  this and the next section on this episode are a recast of [this notebook](https://github.com/iris-hep/analysis-grand-challenge/tree/main/workshops/agctools2022/coffea) by Mat Adamec presented during the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/e/agc-tools-2). 
+Note:  this and the next section on this episode are a recast (with some shameless copying and pasting) of [this notebook](https://github.com/iris-hep/analysis-grand-challenge/tree/main/workshops/agctools2022/coffea) by Mat Adamec presented during the [IRIS-HEP AGC Workshop 2022](https://indico.cern.ch/e/agc-tools-2). 
 
 In one of the pre-exercises we learned how to access `ROOT` files (the standard use at the LHC experiments) using [uproot](https://cms-opendata-workshop.github.io/workshop2022-lesson-cpp-root-python/07-uproot/index.html#open-a-file) and why the [awkward](https://cms-opendata-workshop.github.io/workshop2022-lesson-cpp-root-python/08-awkward/#access-or-download-a-root-file-for-use-with-this-exercise) library can be very helpufl when dealing with *jagged* arrays.
 
@@ -320,7 +320,16 @@ Anyone, in principle, can write a schema that suits particular needs and that co
 
 > ## **Challenge**: Adding the corrected jet energy to the LorentzVector
 >
-> If you check the variables above, you will notice that the `jet` object has an energy `e` recorded but also, as you learn from the physics objects lesson, `corre`, which is the corrected energy.  Inspect and study the file `agc_schema.py` to fix this problem and pass this `corre` energy as the energy to the LorentzVector and not the uncorrected `e` energy.
+> If you check the variables above, you will notice that the `jet` object has an energy `e` recorded but also, as you learn from the physics objects lesson, `corre`, which is the corrected energy.  You can also realize about this if you dump the fields for the jet:
+> 
+> ~~~
+> agc_events.jet.fields
+> ~~~
+> {: .language-python}
+>
+> You should find that you can see the `corre` variable, but this should not happen because it should have been recorded as `energy` for the LorentzVector funcionality.
+> 
+> Inspect and study the file `agc_schema.py` to fix this problem and pass this `corre` energy as the energy to the LorentzVector and not the uncorrected `e` energy.  The changes for `_e` should remain valid for the rest of the objects though.  Note that you could correct for the `fatjet` also in the same line of action.
 >
 > > ## Solution
 > >
