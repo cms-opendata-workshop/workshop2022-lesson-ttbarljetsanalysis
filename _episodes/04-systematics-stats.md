@@ -42,6 +42,8 @@ What's here?
 * $$ n_{cb} $$: the observed number of events, $$ \nu_{nb}(\vec{\eta}, \vec{\chi}) $$: expected number of events
 * <span style="color:blue"> Main poisson p.d.f. for simultaneous measurement over multiple channels (or regions, like a signal region and a control region) and bins (over the histograms)</span>
 * <span style="color:red">Constraint p.d.f which encodes systematic uncertainties: the actual function used depends on the parameter (e.g. it may be a Gaussian)</span>
+* Parameters of interest (POIs): examples in analyses include $$ \sigma \times B $$, $$ m_{W} $$, ...
+* Nuisance parameters (NPs): other parameters needed to define the model, e.g. luminosity 
 
 This is a lot to take in but we'll press on regardless with implementation.
 
@@ -60,12 +62,18 @@ Essentially:
 >
 {: .testimonial}
 
-Let's start by importing the necessary modules, most importantly `cabinetry`:
+Let's start by importing the necessary modules (if you haven't already), most importantly `cabinetry`:
 ~~~
 import logging
 import cabinetry
 ~~~
 {: .language-python}
+
+If `cabinetry` is not installed:
+~~~
+pip install cabinetry
+~~~
+{: .language-bash}
 
 ### Systematics
 
@@ -225,7 +233,7 @@ cabinetry.workspace.save(ws, "workspace.json")
 
 `pyhf` can be run on the command line to inspect the workspace:
 ~~~
-pyhf inspect workspace | head -n 20
+pyhf inspect workspace
 ~~~
 {: .language-bash}
 
@@ -250,6 +258,28 @@ which outputs the following:
   single top, t-channel
                      tW
                   ttbar
+
+            parameters  constraint              modifiers
+             ----------  ----------              ----------
+  Jet energy resolution  constrained_by_normal   histosys,normsys
+       Jet energy scale  constrained_by_normal   histosys,normsys
+             Luminosity  constrained_by_normal   normsys
+           ME variation  constrained_by_normal   histosys,normsys
+           PS variation  constrained_by_normal   histosys,normsys
+W+jets scale variations  constrained_by_normal   histosys,normsys
+             b-tag NP 1  constrained_by_normal   histosys,normsys
+             b-tag NP 2  constrained_by_normal   histosys,normsys
+             b-tag NP 3  constrained_by_normal   histosys,normsys
+             b-tag NP 4  constrained_by_normal   histosys,normsys
+      staterror_4j1b-CR  constrained_by_normal   staterror
+      staterror_4j2b-SR  constrained_by_normal   staterror
+ ttbar scale variations  constrained_by_normal   histosys,normsys
+             ttbar_norm  unconstrained           normfactor
+
+            measurement           poi            parameters
+             ----------        ----------        ----------
+          (*) CMS_ttbar        ttbar_norm        ttbar_norm
+
 ~~~
 {: .output}
 
@@ -273,15 +303,14 @@ pull_fig = cabinetry.visualize.pulls(
 ![](../assets/img/pulls.png){:width="50%"}
 
 
+What are pulls? For our nuisance parameters in the fit the pull is defined as $$ (\hat{\theta} - \theta_{0}) / \Delta\theta $$, which is the
+difference between the fitted parameter value and the initial value divided by the width. Looking at the pulls can aid in seeing how well (or how badly)
+your fit performed. For unbiased estimates and correctly estimated uncertainties, the pull should have a central value of 0 and an uncertainty of 1.
+If the central value is not 0 then some data feature differs from the expectation which may need investigation if large. If the uncertainty is less than 1
+then something is constrained by the data. This needs checking to see if this is legitimate or a modeling issue.
+
 Note that the figures produced by running the script or your commands are to be found in the
 `figures/` directory.
-
-~~~
-poi_index = model.config.poi_index
-print(f"\nfit result for ttbar_norm: {fit_results.bestfit[poi_index]:.3f} +/- {fit_results.uncertainty[poi_index]:.3f}")
-~~~
-{: .language-python}
-
 
 What does the model look like before and after the fit? We can visualize each with the following
 code:
@@ -297,6 +326,25 @@ figs = cabinetry.visualize.data_mc(model_prediction_postfit, data, close_figure=
 We can see that there is very good post-fit agreement:
 ![](../assets/img/4j1b-CR_postfit.png){:width="50%"}
 ![](../assets/img/4j2b-SR_postfit.png){:width="50%"}
+
+Finally, what's the $$ t\bar{t} $$ cross section (for our pseudodata) divided by the Standard Model prediction?
+~~~
+poi_index = model.config.poi_index
+print(f"\nfit result for ttbar_norm: {fit_results.bestfit[poi_index]:.3f} +/- {fit_results.uncertainty[poi_index]:.3f}")
+~~~
+{: .language-python}
+~~~
+fit result for ttbar_norm: 0.964 +/- 0.075
+~~~
+{: .output}
+
+> Phew. We covered a lot in a very short time but essentially:
+> * Our likelihood structure allows to include systematics as uncertainties on NPs
+> * The statistical model uses the HistFactory template
+> * This is implemented using `pyhf` and `cabinetry`
+>
+> What wasn't covered? A lot. But hopefully there is enough here to get you started.
+{: .keypoints}
 
 ## References and further reading
 
