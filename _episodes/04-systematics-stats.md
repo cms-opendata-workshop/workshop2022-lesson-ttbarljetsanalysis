@@ -13,13 +13,19 @@ objectives:
 - "Learn how to interpret these statistical models."
 keypoints:
 - "Systematic variations are conveniently handled with Coffea"
-- "We  construct statistical models to estimate systematics in our analysis."
+- "We construct statistical models to estimate systematics in our analysis."
 - "`cabinetry` and `pyhf` are the tools we use here."
 ---
 
 ## Systematics in Coffea
 
-Let' explore the different ways in which one can introduce the estimation of systematic uncertainties in Coffea.  A few examples, which are relevant for our analysis, have been implemented by the original $$t\bar{t}$$ AGC demonstration.  Of course, they are part of our `coffeaAnalysis_ttbarljets.py` code.  Let's explore the different pieces:
+In an analysis such as this one there are many systematics to consider, both experimental and theoretical (as encapsulated in the MC).
+For the former these include trigger and selection efficiencies, jet energy scale and resolution,
+b-tagging and misidentification efficiencies, and integrated luminosity. The latter can include uncertainties
+due to choice of hadronizer, choice of generator, QCD scale choices, and the parton shower scale.
+This isn't a complete list of systematics and here we will only cover a few of these.
+
+Let's explore the different ways in which one can introduce the estimation of systematic uncertainties in Coffea.  A few examples, which are relevant for our analysis, have been implemented by the original $$t\bar{t}$$ AGC demonstration.  Of course, they are part of our `coffeaAnalysis_ttbarljets.py` code.  Let's explore the different pieces:
 
 Before, we begin, note that a multidimensional array for histograms has been booked:
 
@@ -111,7 +117,7 @@ We do have per-jet variations in our ntuples now, but by the time this AGC demon
 ~~~
 {: .language-python}
 
-The routine then loops over these different types of variations also separating the two signal and control regions, performin the same basic analysis we defined before:
+The routine then loops over these different types of variations also separating the two signal and control regions, performing the same basic analysis we defined before:
 
 ~~~
 for pt_var in pt_variations:
@@ -121,7 +127,7 @@ for pt_var in pt_variations:
 ~~~
 {: .language-python}
 
-For the nominal samples, it os this snippet which introduces the scale variation which might have been included earlier (this is the case for the `wjets` above):
+For the nominal samples, it is this snippet which introduces the scale variation which might have been included earlier (this is the case for the `wjets` above):
 
 ~~~
 if variation == "nominal":
@@ -139,7 +145,7 @@ if variation == "nominal":
 ~~~
 {: .language-python}
 
-Finally an example of how to generate variations that may depend on objects properties, like jet $$p_{T}$$ for the b-tagging.  Note that we already have this variations included in our ntuples but chose not to use them to preserve this version of the demonstration:
+Finally an example of how to generate variations that may depend on objects properties, like jet $$p_{T}$$ for the b-tagging.  Note that we already have these variations included in our ntuples but chose not to use them to preserve this version of the demonstration:
 
 ~~~
 # calculate additional systematics: b-tagging variations
@@ -217,14 +223,6 @@ If `cabinetry` is not installed:
 pip install cabinetry
 ~~~
 {: .language-bash}
-
-### Systematics
-
-In an analysis such as this one there are many systematics to consider, both experimental and theoretical (as encapsulated in the MC).
-For the former these include trigger and selection efficiencies, jet energy scale and resolution,
-b-tagging and misidentification efficiencies, and integrated luminosity. The latter can include uncertainties
-due to choice of hadronizer, choice of generator, QCD scale choices, and the parton shower scale.
-This isn't a complete list of systematics and here will only cover a few of these (more on this later).
 
 ### Histograms
 
@@ -482,7 +480,8 @@ fit result for ttbar_norm: 0.964 +/- 0.075
 {: .output}
 
 > Phew. We covered a lot in a very short time but essentially:
-> * Our likelihood structure allows to include systematics as uncertainties on NPs
+> * Coffea allows for addition of systematic variations
+> * Our likelihood structure allows us to include systematics as uncertainties on NPs
 > * The statistical model uses the HistFactory template
 > * This is implemented using `pyhf` and `cabinetry`
 >
