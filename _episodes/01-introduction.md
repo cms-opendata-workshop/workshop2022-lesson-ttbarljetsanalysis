@@ -331,6 +331,8 @@ Anyone, in principle, can write a schema that suits particular needs and that co
 > 
 > Inspect and study the file `agc_schema.py` to fix this problem and pass this `corre` energy as the energy to the LorentzVector and not the uncorrected `e` energy.  The changes for `_e` should remain valid for the rest of the objects though.  Note that you could correct for the `fatjet` also in the same line of action.
 >
+> In order to see the difference you need to reload the schema.  It may be necessary to rm the `__pycache__` directory in your area altogether.
+>
 > > ## Solution
 > >
 > > You can download the solution from [here](https://raw.githubusercontent.com/cms-opendata-workshop/workshop2022-lesson-ttbarljetsanalysis-payload/master/agc_schema.py)
