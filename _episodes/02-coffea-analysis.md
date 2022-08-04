@@ -85,8 +85,7 @@ Here is a summary of the **selection requirements** used in the [original CMS an
 >
 > Exactly one electron
 >   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.1$$, tight ID
->   * SIP3D < 4
->   * Jets identified as b-jets if [CSV discriminator value](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/JetAnalyzer.cc#L410) > 0.8 (medium working point)
+>   * SIP3D < 4   
 >
 {: .checklist}
 
@@ -95,6 +94,7 @@ Here is a summary of the **selection requirements** used in the [original CMS an
 > Require at least one jet
 >   * Loose jet ID
 >   * $$p_T$$ > 30 GeV, $$\lvert\eta\rvert<2.4$$, [Fall15_25nsV2](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/python/poet_cfg.py#L148)
+>   * Jets identified as b-jets if [CSV discriminator value](https://github.com/cms-opendata-analyses/PhysObjectExtractorTool/blob/2ca8a409e84f244f3ecb8bbab5bfba49af331d57/PhysObjectExtractor/src/JetAnalyzer.cc#L410) > 0.8 (medium working point)
 >
 {: .checklist}
 
@@ -416,7 +416,7 @@ histogram.axes
 ~~~
 {: .language-python}
 
-in order to understand the structure a bit better.  You can see that this hist object is multidimensional holder for histograms, which makes it very convenient and very powerful. You could fill out the outter most *StrCategories* with several *processes* and *variations. You can *slice and dice*.  Here a very quick example: let's say that, once the histogram is filled (we haven't done that yet), you want to get the histograms which have to with the signal region.  Accessing them is very simple:
+in order to understand the structure a bit better.  You can see that this hist object is multidimensional holder for histograms, which makes it very convenient and very powerful. You could fill out the outter most *StrCategories* with several *processes* and *variations*. You can *slice and dice*.  Here a very quick example: let's say that, once the histogram is filled (we haven't done that yet), you want to get the histograms which have to with the signal region.  Accessing them is very simple:
 
 ~~~
 histogram[:,1,:,:]
@@ -709,7 +709,7 @@ python coffeaAnalysis_ttbarljets.py
 
 > ## Plotting the final results
 > 
-> [Here](https://cernbox.cern.ch/index.php/s/SPcoOLArZCFFupN) you can download a full `histograms.root`.  It was obtained after 4 hours of running on a single computer.  It contains all the histograms produced by the analysis Processor.  We have prepared a plotting script for you to see the results:
+> [Here](https://cernbox.cern.ch/index.php/s/SPcoOLArZCFFupN) you can download a full `histograms.root`.  It was obtained after 4 hours of running on a single computer. Of course, if you have some available space, you could download the files (the size is not terribly large, maybe around 60GB or so), and run much faster. It contains all the histograms produced by the analysis Processor.  We have prepared a plotting script for you to see the results:
 >
 > ~~~
 > python plotme.py
