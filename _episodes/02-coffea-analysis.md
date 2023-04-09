@@ -116,7 +116,7 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 from coffea.nanoevents import NanoEventsFactory, BaseSchema
 from agc_schema import AGCSchema
-events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms/upload/POET/23-Jul-22/RunIIFall15MiniAODv2_TT_TuneCUETP8M1_13TeV-powheg-pythia8_flat/00EFE6B3-01FE-4FBF-ADCB-2921D5903E44_flat.root', schemaclass=AGCSchema, treepath='events').events()
+events = NanoEventsFactory.from_root('root://eospublic.cern.ch//eos/opendata/cms/derived-data/POET/23-Jul-22/RunIIFall15MiniAODv2_TT_TuneCUETP8M1_13TeV-powheg-pythia8_flat/00EFE6B3-01FE-4FBF-ADCB-2921D5903E44_flat.root', schemaclass=AGCSchema, treepath='events').events()
 ~~~
 {: .language-python}
 
@@ -465,7 +465,7 @@ The processor includes a lot of the physics analysis details:
 * calculating systematic uncertainties at the event and object level,
 * filling all the information into histograms that get aggregated and ultimately returned to us by coffea
 
-In the `coffeaAnalysis_ttbarljets.py` in your copy of the repository you will find the definition of our **Processor**.  It is buil as a python class, which nicely encapsulates it and, as advertised, becomes independent of the *executor*.
+In the `coffeaAnalysis_ttbarljets.py` in your copy of the repository you will find the definition of our **Processor**.  It is built as a python class, which nicely encapsulates it and, as advertised, becomes independent of the *executor*.
 
 >
 > Inspect it briefly, you will recognize the basic ingredients that we already explored.  The only difference is that it has been modified so it allows for additional features like running over different **processes** and/or **variations** of them and filling in corresponding histograms.  
@@ -639,7 +639,7 @@ In the `coffeaAnalysis_ttbarljets.py` in your copy of the repository you will fi
 > {: .solution}
 {: .challenge}
 
-Right below this Processor class, in the `coffeaAnalysis_ttbarljets.py` file, you will find a snippet which fuilds the input for the Processor (i.e., for the analysis):
+Right below this Processor class, in the `coffeaAnalysis_ttbarljets.py` file, you will find a snippet which builds the input for the Processor (i.e., for the analysis):
 
 
 ~~~
